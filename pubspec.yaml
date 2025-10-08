@@ -1,0 +1,49 @@
+name: community
+description: "A full-service app for residents and community owners. Schedule events, receive alerts, find friends, refer contractors and much more"
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Firebase
+  firebase_core: ^3.8.1
+  firebase_auth: ^5.3.3
+  cloud_firestore: ^5.5.0
+  firebase_storage: ^12.3.6
+  firebase_messaging: ^15.1.5
+
+  # Code Generation
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Routing
+  go_router: ^14.6.2
+
+  # UI Utilities
+  flutter_local_notifications: ^18.0.1
+  cached_network_image: ^3.4.1
+  image_picker: ^1.1.2
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Code Generation
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.2
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true

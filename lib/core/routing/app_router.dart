@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/auth_service.dart';
+import '../../views/auth/login_screen.dart';
+import '../../views/auth/register_screen.dart';
+import '../../views/messaging/message_list_screen.dart';
+import '../../views/profile/profile_screen.dart';
+
+class AppRouter {
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+  static final _shellNavigatorKey = GlobalKey<NavigatorState>();
+
+  static GoRouter router(WidgetRef ref) {
+    return GoRouter(
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: '/messages',
+      redirect: (context, state) {
+        final user = ref.read(currentUserProvider);
+        final isLoggedIn = user != null;
+
+        final isLoginRoute = state.matchedLocation.startsWith('/auth');
+
+        if (!isLoggedIn && !isLoginRoute) {
+          return '/auth/login';
+        }
+
+        if (isLoggedIn && isLoginRoute) {
+          return '/messages';
+        }
+
+        return null;
+      },
+      routes: [
+        ShellRoute(
+          navigatorKey: _shellNavigatorKey,
+          builder: (context, state, child) {
+            return MainScaffold(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: '/messages',
+              name: 'messages',
+              builder: (context, state) => const MessageListScreen(),
+            ),
+            GoRoute(
+              path: '/profile',
+              name: 'profile',
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/auth/login',
+          name: 'login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: '/auth/register',
+          name: 'register',
+          builder: (context, state) => const RegisterScreen(),
+        ),
+      ],
+    );
+  }
+}
+
+class MainScaffold extends ConsumerWidget {
+  final Widget child;
+
+  const MainScaffold({
+    required this.child,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: child,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _getCurrentIndex(context),
+        onTap: (index) => _onItemTapped(context, index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: 'Messages',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _getCurrentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    switch (location) {
+      case '/messages':
+        return 0;
+      case '/profile':
+        return 1;
+      default:
+        return 0;
+    }
+  }
+
+  void _onItemTapped(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.go('/messages');
+        break;
+      case 1:
+        context.go('/profile');
+        break;
+    }
+  }
+}

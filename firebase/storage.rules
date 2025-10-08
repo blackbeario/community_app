@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // User profile images
+    match /users/{userId}/profile/{fileName} {
+      // Anyone can read profile images
+      allow read: if true;
+
+      // Only the user can upload/update their profile image
+      allow write: if isAuthenticated() && isOwner(userId) &&
+                      request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // Message images
+    match /messages/{messageId}/{fileName} {
+      // Authenticated users can read message images
+      allow read: if isAuthenticated();
+
+      // Authenticated users can upload message images
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 10 * 1024 * 1024 && // 10MB limit
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // DM attachments
+    match /conversations/{conversationId}/{fileName} {
+      // Only conversation participants can access
+      allow read: if isAuthenticated(); // We'll verify in app logic
+
+      // Authenticated users can upload
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+
+    // Incident photos (for map)
+    match /incidents/{incidentId}/{fileName} {
+      // Anyone authenticated can read
+      allow read: if isAuthenticated();
+
+      // Authenticated users can upload
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // Advertiser logos
+    match /advertisers/{advertiserId}/logo/{fileName} {
+      // Anyone can read advertiser logos
+      allow read: if true;
+
+      // Only admins can upload (verify in app logic)
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 2 * 1024 * 1024 && // 2MB limit
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // Ad images
+    match /ads/{adId}/{fileName} {
+      // Anyone can read ad images
+      allow read: if true;
+
+      // Only admins can upload (verify in app logic)
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+                      request.resource.contentType.matches('image/.*');
+    }
+  }
+}

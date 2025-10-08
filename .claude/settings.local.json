@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(npm install:*)",
+      "Bash(flutterfire:*)",
+      "Bash(dart pub global activate:*)",
+      "Bash(dart run build_runner:*)",
+      "Bash(flutter run:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
