@@ -6,7 +6,7 @@ part of 'auth_viewmodel.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authStateHash() => r'0b877a6620b9dad541fb53829cc6285756eb383c';
+String _$authStateHash() => r'876788cb4d58790b139a3c3c4dd45497d4165259';
 
 /// See also [authState].
 @ProviderFor(authState)
@@ -25,7 +25,7 @@ final authStateProvider =
 // ignore: unused_element
 typedef AuthStateRef = AutoDisposeStreamProviderRef<firebase_auth.User?>;
 String _$currentFirebaseUserHash() =>
-    r'a209de17ed0e39269c8dac3aafba9e1d8b7a5105';
+    r'a9aa96898b8d19554bf0e10ea883198d558d5e38';
 
 /// See also [currentFirebaseUser].
 @ProviderFor(currentFirebaseUser)
@@ -43,7 +43,7 @@ final currentFirebaseUserProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CurrentFirebaseUserRef = AutoDisposeProviderRef<firebase_auth.User?>;
-String _$currentAppUserHash() => r'547503eba2b4e1ebab71a0d96b0ae543f1336efc';
+String _$currentAppUserHash() => r'6df262f33b823e059f548160ac6437c3c86a83a6';
 
 /// See also [currentAppUser].
 @ProviderFor(currentAppUser)
