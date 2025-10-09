@@ -4,23 +4,23 @@ The Community mobile app is a neighborhood-driven solution for residents to inte
 
 ## Features
 
-• Group Messaging
-• Personal Messaging
-• Push Notifications
-• Search Advertiser Services
-• Reservations for Golf, Pickleball, Pools, Dinner, etc
-• Custom Event Creation & RSVP
-• Calendar Integration
-• Interactive Community Maps
-• Geolocation
-• AI-Agent FAQ
+* Group Messaging
+* Personal Messaging
+* Push Notifications
+* Search Advertiser Services
+* Reservations for Golf, Pickleball, Pools, Dinner, etc
+* Custom Event Creation & RSVP
+* Calendar Integration
+* Interactive Community Maps
+* Geolocation
+* AI-Agent FAQ
 
 ## Architecture
 
-• Flutter MVVM
-• Firebase Messaging
-• Firebase Storage
-• Cloud Firestore
-• Cloud Functions
-• Riverpod
-• Freezed
+* Flutter MVVM
+* Firebase Messaging
+* Firebase Storage
+* Cloud Firestore
+* Cloud Functions
+* Riverpod
+* Freezed
