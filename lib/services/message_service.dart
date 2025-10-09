@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/config/firebase_providers.dart';
 import '../models/message.dart';
@@ -157,6 +158,6 @@ class MessageService {
 }
 
 @riverpod
-MessageService messageService(MessageServiceRef ref) {
+MessageService messageService(Ref ref) {
   return MessageService(ref.watch(firebaseFirestoreProvider));
 }

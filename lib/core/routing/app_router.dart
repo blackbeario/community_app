@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
 import '../../views/auth/login_screen.dart';
 import '../../views/auth/register_screen.dart';
@@ -15,7 +14,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
 @riverpod
-GoRouter goRouter(GoRouterRef ref) {
+GoRouter goRouter(Ref ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
       initialLocation: '/messages',

@@ -4,6 +4,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/profile/profile_viewmodel.dart';
+import 'widgets/default_cover_photo.dart';
+import 'widgets/profile_action_button.dart';
+import 'widgets/profile_tab.dart';
+import 'widgets/help_category_card.dart';
+import 'widgets/editable_unit_number.dart';
+import 'widgets/editable_bio.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -38,14 +44,11 @@ class ProfileScreen extends ConsumerWidget {
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(
                                     color: Colors.grey[300],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
+                                    child: const Center(child: CircularProgressIndicator()),
                                   ),
-                                  errorWidget: (context, url, error) =>
-                                      _buildDefaultCoverPhoto(),
+                                  errorWidget: (context, url, error) => const DefaultCoverPhoto(),
                                 )
-                              : _buildDefaultCoverPhoto(),
+                              : const DefaultCoverPhoto(),
                           // Gradient overlay (non-interactive)
                           IgnorePointer(
                             child: Container(
@@ -53,10 +56,7 @@ class ProfileScreen extends ConsumerWidget {
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withValues(alpha: 0.3),
-                                    Colors.transparent,
-                                  ],
+                                  colors: [Colors.black.withValues(alpha: 0.3), Colors.transparent],
                                 ),
                               ),
                             ),
@@ -87,141 +87,117 @@ class ProfileScreen extends ConsumerWidget {
                   // Profile Content with padding for profile photo
                   SliverToBoxAdapter(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 70), // Space for overlapping profile photo
+                        const SizedBox(height: 16),
 
-                      const SizedBox(height: 16),
-
-                      // Name
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(
-                          user.name,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Unit Number
-                      if (user.unitNumber != null)
+                        // Name
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
-                            user.unitNumber!,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
+                            user.name,
+                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
                           ),
                         ),
 
-                      const SizedBox(height: 16),
+                        // Unit Number
+                        EditableUnitNumber(
+                          unitNumber: user.unitNumber,
+                          onSave: (unitNumber) => ref.read(profileViewModelProvider.notifier).updateUnitNumber(user.id, unitNumber),
+                        ),
 
-                      // Bio
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(
-                          user.bio ?? 'No bio yet. Tap to add one.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: user.bio != null ? Colors.black87 : Colors.grey,
+                        // Bio
+                        EditableBio(
+                          bio: user.bio,
+                          onSave: (bio) => ref.read(profileViewModelProvider.notifier).updateBio(user.id, bio),
+                        ),
+
+                        // Action Buttons
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ProfileActionButton(
+                                  icon: Icons.mail_outline,
+                                  onPressed: () {
+                                    // TODO: Send message
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ProfileActionButton(
+                                  icon: Icons.chat_bubble_outline,
+                                  onPressed: () {
+                                    // TODO: Start chat
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                      ),
 
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                      // Action Buttons
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _buildActionButton(
-                                icon: Icons.mail_outline,
-                                onPressed: () {
-                                  // TODO: Send message
-                                },
+                        // Tabs
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ProfileTab(
+                                  label: 'Help categories',
+                                  isSelected: true,
+                                  onPressed: () {
+                                    // TODO: Show help categories
+                                  },
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildActionButton(
-                                icon: Icons.chat_bubble_outline,
-                                onPressed: () {
-                                  // TODO: Start chat
-                                },
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ProfileTab(
+                                  label: 'Groups',
+                                  isSelected: false,
+                                  onPressed: () {
+                                    // TODO: Show groups
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                      // Tabs
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _buildTab(
-                                label: 'Help categories',
-                                isSelected: true,
-                                onPressed: () {
-                                  // TODO: Show help categories
-                                },
+                        // Help Categories
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: HelpCategoryCard(
+                                  label: 'Groceries',
+                                  onPressed: () {
+                                    // TODO: Navigate to groceries
+                                  },
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildTab(
-                                label: 'Groups',
-                                isSelected: false,
-                                onPressed: () {
-                                  // TODO: Show groups
-                                },
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: HelpCategoryCard(
+                                  label: 'Sport',
+                                  onPressed: () {
+                                    // TODO: Navigate to sport
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 24),
-
-                      // Help Categories
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _buildHelpCategory(
-                                label: 'Groceries',
-                                onPressed: () {
-                                  // TODO: Navigate to groceries
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildHelpCategory(
-                                label: 'Sport',
-                                onPressed: () {
-                                  // TODO: Navigate to sport
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -229,9 +205,8 @@ class ProfileScreen extends ConsumerWidget {
               ),
               // Profile Photo - positioned absolutely on top
               Positioned(
-                top: 160,
-                left: 0,
-                right: 0,
+                top: 148,
+                right: 20,
                 child: Center(
                   child: Material(
                     color: Colors.transparent,
@@ -243,10 +218,7 @@ class ProfileScreen extends ConsumerWidget {
                           Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 4,
-                              ),
+                              border: Border.all(color: Colors.white, width: 4),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.2),
@@ -262,11 +234,7 @@ class ProfileScreen extends ConsumerWidget {
                                   ? CachedNetworkImageProvider(user.photoUrl!)
                                   : null,
                               child: user.photoUrl == null
-                                  ? const Icon(
-                                      Icons.person,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    )
+                                  ? const Icon(Icons.person, size: 48, color: Colors.grey)
                                   : null,
                             ),
                           ),
@@ -276,15 +244,8 @@ class ProfileScreen extends ConsumerWidget {
                             child: IgnorePointer(
                               child: Container(
                                 padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.blue,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.camera_alt,
-                                  size: 20,
-                                  color: Colors.white,
-                                ),
+                                decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+                                child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
                               ),
                             ),
                           ),
@@ -303,119 +264,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDefaultCoverPhoto() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue[300]!,
-            Colors.purple[300]!,
-          ],
-        ),
-      ),
-      child: const Center(
-        child: Icon(
-          Icons.landscape,
-          size: 60,
-          color: Colors.white54,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[200],
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: Icon(icon, size: 24),
-    );
-  }
-
-  Widget _buildTab({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? const Color(0xFF2D2D5F) : Colors.grey[200],
-        foregroundColor: isSelected ? Colors.white : Colors.black87,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHelpCategory({
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D5F),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showProfilePhotoOptions(BuildContext context, WidgetRef ref, String userId) {
     showModalBottomSheet(
       context: context,
@@ -427,9 +275,7 @@ class ProfileScreen extends ConsumerWidget {
               title: const Text('Take Photo'),
               onTap: () {
                 Navigator.pop(context);
-                ref
-                    .read(profileViewModelProvider.notifier)
-                    .updateProfilePhoto(userId, ImageSource.camera);
+                ref.read(profileViewModelProvider.notifier).updateProfilePhoto(userId, ImageSource.camera);
               },
             ),
             ListTile(
@@ -437,9 +283,7 @@ class ProfileScreen extends ConsumerWidget {
               title: const Text('Choose from Gallery'),
               onTap: () {
                 Navigator.pop(context);
-                ref
-                    .read(profileViewModelProvider.notifier)
-                    .updateProfilePhoto(userId, ImageSource.gallery);
+                ref.read(profileViewModelProvider.notifier).updateProfilePhoto(userId, ImageSource.gallery);
               },
             ),
           ],
@@ -459,9 +303,7 @@ class ProfileScreen extends ConsumerWidget {
               title: const Text('Take Photo'),
               onTap: () {
                 Navigator.pop(context);
-                ref
-                    .read(profileViewModelProvider.notifier)
-                    .updateCoverPhoto(userId, ImageSource.camera);
+                ref.read(profileViewModelProvider.notifier).updateCoverPhoto(userId, ImageSource.camera);
               },
             ),
             ListTile(
@@ -469,9 +311,7 @@ class ProfileScreen extends ConsumerWidget {
               title: const Text('Choose from Gallery'),
               onTap: () {
                 Navigator.pop(context);
-                ref
-                    .read(profileViewModelProvider.notifier)
-                    .updateCoverPhoto(userId, ImageSource.gallery);
+                ref.read(profileViewModelProvider.notifier).updateCoverPhoto(userId, ImageSource.gallery);
               },
             ),
           ],

@@ -3,7 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../models/user.dart';
+// import '../../models/user.dart';
 import '../../services/user_service.dart';
 import '../../services/image_picker_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +24,7 @@ class ProfileViewModel extends _$ProfileViewModel {
         final photoUrl = await _uploadImage(file, 'users/$userId/profile/photo.jpg', userId);
         await ref.read(userServiceProvider).updateUserFields(userId, {'photoUrl': photoUrl});
 
-        await FirebaseAnalytics.instance.logEvent(
+        await _logAnalyticsEvent(
           name: 'profile_photo_updated',
           parameters: {'user_id': userId, 'source': source.name},
         );
@@ -49,7 +49,7 @@ class ProfileViewModel extends _$ProfileViewModel {
         final coverPhotoUrl = await _uploadImage(file, 'users/$userId/profile/cover.jpg', userId);
         await ref.read(userServiceProvider).updateUserFields(userId, {'coverPhotoUrl': coverPhotoUrl});
 
-        await FirebaseAnalytics.instance.logEvent(
+        await _logAnalyticsEvent(
           name: 'cover_photo_updated',
           parameters: {'user_id': userId, 'source': source.name},
         );
@@ -66,13 +66,11 @@ class ProfileViewModel extends _$ProfileViewModel {
   }
 
   Future<void> updateBio(String userId, String bio) async {
-    state = const AsyncValue.loading();
-
     state = await AsyncValue.guard(() async {
       try {
         await ref.read(userServiceProvider).updateUserFields(userId, {'bio': bio});
 
-        await FirebaseAnalytics.instance.logEvent(
+        await _logAnalyticsEvent(
           name: 'bio_updated',
           parameters: {'user_id': userId},
         );
@@ -86,6 +84,42 @@ class ProfileViewModel extends _$ProfileViewModel {
         rethrow;
       }
     });
+  }
+
+  Future<void> updateUnitNumber(String userId, String unitNumber) async {
+    state = await AsyncValue.guard(() async {
+      try {
+        await ref.read(userServiceProvider).updateUserFields(userId, {'unitNumber': unitNumber});
+
+        await _logAnalyticsEvent(
+          name: 'unit_number_updated',
+          parameters: {'user_id': userId},
+        );
+      } catch (error, stackTrace) {
+        await FirebaseCrashlytics.instance.recordError(
+          error,
+          stackTrace,
+          reason: 'Failed to update unit number',
+          information: ['userId: $userId'],
+        );
+        rethrow;
+      }
+    });
+  }
+
+  Future<void> _logAnalyticsEvent({
+    required String name,
+    Map<String, Object>? parameters,
+  }) async {
+    try {
+      await FirebaseAnalytics.instance.logEvent(
+        name: name,
+        parameters: parameters,
+      );
+    } catch (e) {
+      // Silently fail if analytics isn't available
+      // This prevents crashes when analytics isn't properly configured
+    }
   }
 
   Future<String> _uploadImage(File file, String path, String userId) async {
