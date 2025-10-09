@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
 import '../../views/auth/login_screen.dart';
@@ -8,13 +9,15 @@ import '../../views/auth/register_screen.dart';
 import '../../views/messaging/message_list_screen.dart';
 import '../../views/profile/profile_screen.dart';
 
-class AppRouter {
-  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final _shellNavigatorKey = GlobalKey<NavigatorState>();
+part 'app_router.g.dart';
 
-  static GoRouter router(WidgetRef ref) {
-    return GoRouter(
-      navigatorKey: _rootNavigatorKey,
+final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+
+@riverpod
+GoRouter goRouter(GoRouterRef ref) {
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
       initialLocation: '/messages',
       redirect: (context, state) {
         final user = ref.read(currentUserProvider);
@@ -62,8 +65,7 @@ class AppRouter {
           builder: (context, state) => const RegisterScreen(),
         ),
       ],
-    );
-  }
+  );
 }
 
 class MainScaffold extends ConsumerWidget {

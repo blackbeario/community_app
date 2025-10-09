@@ -24,8 +24,8 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = AppRouter.router(ref);
-    
+    final router = ref.watch(goRouterProvider);
+
     return MaterialApp.router(
       title: 'Community',
       theme: AppTheme.lightTheme,
