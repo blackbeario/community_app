@@ -6,7 +6,7 @@ part of 'message_viewmodel.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$messagesHash() => r'85e42f4675b5fc9b31b27974a9e40261731c4f1c';
+String _$groupMessagesHash() => r'e17c27bfc88f28632c31f76e01924a96070d7740';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,30 +29,32 @@ class _SystemHash {
   }
 }
 
-/// Stream provider for messages in a specific group
+/// Stream provider for recent messages in a specific group (limit: 20)
 ///
-/// Copied from [messages].
-@ProviderFor(messages)
-const messagesProvider = MessagesFamily();
+/// Copied from [groupMessages].
+@ProviderFor(groupMessages)
+const groupMessagesProvider = GroupMessagesFamily();
 
-/// Stream provider for messages in a specific group
+/// Stream provider for recent messages in a specific group (limit: 20)
 ///
-/// Copied from [messages].
-class MessagesFamily extends Family<AsyncValue<List<Message>>> {
-  /// Stream provider for messages in a specific group
+/// Copied from [groupMessages].
+class GroupMessagesFamily extends Family<AsyncValue<List<Message>>> {
+  /// Stream provider for recent messages in a specific group (limit: 20)
   ///
-  /// Copied from [messages].
-  const MessagesFamily();
+  /// Copied from [groupMessages].
+  const GroupMessagesFamily();
 
-  /// Stream provider for messages in a specific group
+  /// Stream provider for recent messages in a specific group (limit: 20)
   ///
-  /// Copied from [messages].
-  MessagesProvider call(String groupId) {
-    return MessagesProvider(groupId);
+  /// Copied from [groupMessages].
+  GroupMessagesProvider call(String groupId) {
+    return GroupMessagesProvider(groupId);
   }
 
   @override
-  MessagesProvider getProviderOverride(covariant MessagesProvider provider) {
+  GroupMessagesProvider getProviderOverride(
+    covariant GroupMessagesProvider provider,
+  ) {
     return call(provider.groupId);
   }
 
@@ -68,30 +70,31 @@ class MessagesFamily extends Family<AsyncValue<List<Message>>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'messagesProvider';
+  String? get name => r'groupMessagesProvider';
 }
 
-/// Stream provider for messages in a specific group
+/// Stream provider for recent messages in a specific group (limit: 20)
 ///
-/// Copied from [messages].
-class MessagesProvider extends AutoDisposeStreamProvider<List<Message>> {
-  /// Stream provider for messages in a specific group
+/// Copied from [groupMessages].
+class GroupMessagesProvider extends AutoDisposeStreamProvider<List<Message>> {
+  /// Stream provider for recent messages in a specific group (limit: 20)
   ///
-  /// Copied from [messages].
-  MessagesProvider(String groupId)
+  /// Copied from [groupMessages].
+  GroupMessagesProvider(String groupId)
     : this._internal(
-        (ref) => messages(ref as MessagesRef, groupId),
-        from: messagesProvider,
-        name: r'messagesProvider',
+        (ref) => groupMessages(ref as GroupMessagesRef, groupId),
+        from: groupMessagesProvider,
+        name: r'groupMessagesProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$messagesHash,
-        dependencies: MessagesFamily._dependencies,
-        allTransitiveDependencies: MessagesFamily._allTransitiveDependencies,
+            : _$groupMessagesHash,
+        dependencies: GroupMessagesFamily._dependencies,
+        allTransitiveDependencies:
+            GroupMessagesFamily._allTransitiveDependencies,
         groupId: groupId,
       );
 
-  MessagesProvider._internal(
+  GroupMessagesProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -105,12 +108,12 @@ class MessagesProvider extends AutoDisposeStreamProvider<List<Message>> {
 
   @override
   Override overrideWith(
-    Stream<List<Message>> Function(MessagesRef provider) create,
+    Stream<List<Message>> Function(GroupMessagesRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: MessagesProvider._internal(
-        (ref) => create(ref as MessagesRef),
+      override: GroupMessagesProvider._internal(
+        (ref) => create(ref as GroupMessagesRef),
         from: from,
         name: null,
         dependencies: null,
@@ -123,12 +126,12 @@ class MessagesProvider extends AutoDisposeStreamProvider<List<Message>> {
 
   @override
   AutoDisposeStreamProviderElement<List<Message>> createElement() {
-    return _MessagesProviderElement(this);
+    return _GroupMessagesProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is MessagesProvider && other.groupId == groupId;
+    return other is GroupMessagesProvider && other.groupId == groupId;
   }
 
   @override
@@ -142,40 +145,21 @@ class MessagesProvider extends AutoDisposeStreamProvider<List<Message>> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin MessagesRef on AutoDisposeStreamProviderRef<List<Message>> {
+mixin GroupMessagesRef on AutoDisposeStreamProviderRef<List<Message>> {
   /// The parameter `groupId` of this provider.
   String get groupId;
 }
 
-class _MessagesProviderElement
+class _GroupMessagesProviderElement
     extends AutoDisposeStreamProviderElement<List<Message>>
-    with MessagesRef {
-  _MessagesProviderElement(super.provider);
+    with GroupMessagesRef {
+  _GroupMessagesProviderElement(super.provider);
 
   @override
-  String get groupId => (origin as MessagesProvider).groupId;
+  String get groupId => (origin as GroupMessagesProvider).groupId;
 }
 
-String _$allMessagesHash() => r'e7d4cce4c0c7e29d02e18c92ce20b60df7649ee8';
-
-/// Stream provider for all messages (across all groups)
-///
-/// Copied from [allMessages].
-@ProviderFor(allMessages)
-final allMessagesProvider = AutoDisposeStreamProvider<List<Message>>.internal(
-  allMessages,
-  name: r'allMessagesProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$allMessagesHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AllMessagesRef = AutoDisposeStreamProviderRef<List<Message>>;
-String _$messageUserHash() => r'f7468a409d0332a7e5abed438d638bce345ec905';
+String _$messageUserHash() => r'1e85734a1d44d6917c4e18f71208df82122f05b6';
 
 /// Provider to get user details for a message
 ///
@@ -306,7 +290,7 @@ class _MessageUserProviderElement
   String get userId => (origin as MessageUserProvider).userId;
 }
 
-String _$messageCommentsHash() => r'1ea7d4e93db47c586b645d3c3c0b84a53a9521dd';
+String _$messageCommentsHash() => r'0fb14e74cfcd0f5f13038f86a2cb3d4054da69a9';
 
 /// Stream provider for comments on a specific message
 ///
@@ -438,7 +422,139 @@ class _MessageCommentsProviderElement
   String get messageId => (origin as MessageCommentsProvider).messageId;
 }
 
-String _$messageViewModelHash() => r'8c2b85cf2fb7e2f75bd197598ed85722838d1e6a';
+String _$messageStreamHash() => r'5b6831735c43f19c4cc73c76985b4b71f1f34dd6';
+
+/// Stream provider for a single message (real-time updates)
+///
+/// Copied from [messageStream].
+@ProviderFor(messageStream)
+const messageStreamProvider = MessageStreamFamily();
+
+/// Stream provider for a single message (real-time updates)
+///
+/// Copied from [messageStream].
+class MessageStreamFamily extends Family<AsyncValue<Message?>> {
+  /// Stream provider for a single message (real-time updates)
+  ///
+  /// Copied from [messageStream].
+  const MessageStreamFamily();
+
+  /// Stream provider for a single message (real-time updates)
+  ///
+  /// Copied from [messageStream].
+  MessageStreamProvider call(String messageId) {
+    return MessageStreamProvider(messageId);
+  }
+
+  @override
+  MessageStreamProvider getProviderOverride(
+    covariant MessageStreamProvider provider,
+  ) {
+    return call(provider.messageId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'messageStreamProvider';
+}
+
+/// Stream provider for a single message (real-time updates)
+///
+/// Copied from [messageStream].
+class MessageStreamProvider extends AutoDisposeStreamProvider<Message?> {
+  /// Stream provider for a single message (real-time updates)
+  ///
+  /// Copied from [messageStream].
+  MessageStreamProvider(String messageId)
+    : this._internal(
+        (ref) => messageStream(ref as MessageStreamRef, messageId),
+        from: messageStreamProvider,
+        name: r'messageStreamProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$messageStreamHash,
+        dependencies: MessageStreamFamily._dependencies,
+        allTransitiveDependencies:
+            MessageStreamFamily._allTransitiveDependencies,
+        messageId: messageId,
+      );
+
+  MessageStreamProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.messageId,
+  }) : super.internal();
+
+  final String messageId;
+
+  @override
+  Override overrideWith(
+    Stream<Message?> Function(MessageStreamRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MessageStreamProvider._internal(
+        (ref) => create(ref as MessageStreamRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        messageId: messageId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeStreamProviderElement<Message?> createElement() {
+    return _MessageStreamProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MessageStreamProvider && other.messageId == messageId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, messageId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin MessageStreamRef on AutoDisposeStreamProviderRef<Message?> {
+  /// The parameter `messageId` of this provider.
+  String get messageId;
+}
+
+class _MessageStreamProviderElement
+    extends AutoDisposeStreamProviderElement<Message?>
+    with MessageStreamRef {
+  _MessageStreamProviderElement(super.provider);
+
+  @override
+  String get messageId => (origin as MessageStreamProvider).messageId;
+}
+
+String _$messageViewModelHash() => r'86240117da4260e904b450470e66f13772486432';
 
 /// ViewModel for message actions (posting, liking, commenting)
 ///

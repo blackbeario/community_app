@@ -31,6 +31,22 @@ class MessageService {
             .toList());
   }
 
+  Stream<List<Message>> getAllMessages({int? limit}) {
+    Query query = _firestore
+        .collection(_messagesCollection)
+        .orderBy('timestamp', descending: true);
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    return query
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Message.fromJson(doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
   Stream<List<Message>> getMessagesLimit(String groupId, int limit) {
     return _firestore
         .collection(_messagesCollection)
@@ -64,6 +80,40 @@ class MessageService {
         .toList();
   }
 
+  Future<QuerySnapshot> getAllMessagesPaginated({
+    DocumentSnapshot? lastDocument,
+    int limit = 20,
+  }) async {
+    Query query = _firestore
+        .collection(_messagesCollection)
+        .orderBy('timestamp', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    return await query.get();
+  }
+
+  Future<QuerySnapshot> getGroupMessagesPaginated({
+    required String groupId,
+    DocumentSnapshot? lastDocument,
+    int limit = 20,
+  }) async {
+    Query query = _firestore
+        .collection(_messagesCollection)
+        .where('groupId', isEqualTo: groupId)
+        .orderBy('timestamp', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    return await query.get();
+  }
+
   Future<Message?> getMessage(String messageId) async {
     final doc = await _firestore
         .collection(_messagesCollection)
@@ -74,6 +124,19 @@ class MessageService {
       return Message.fromJson(doc.data()!);
     }
     return null;
+  }
+
+  Stream<Message?> getMessageStream(String messageId) {
+    return _firestore
+        .collection(_messagesCollection)
+        .doc(messageId)
+        .snapshots()
+        .map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return Message.fromJson(doc.data()!);
+      }
+      return null;
+    });
   }
 
   Future<void> likeMessage(String messageId, String userId) async {

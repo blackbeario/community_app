@@ -347,6 +347,7 @@ mixin _$Comment {
   String get messageId => throw _privateConstructorUsedError;
   String get userId => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
+  String? get imageUrl => throw _privateConstructorUsedError;
   @TimestampConverter()
   DateTime get timestamp => throw _privateConstructorUsedError;
 
@@ -369,6 +370,7 @@ abstract class $CommentCopyWith<$Res> {
     String messageId,
     String userId,
     String content,
+    String? imageUrl,
     @TimestampConverter() DateTime timestamp,
   });
 }
@@ -392,6 +394,7 @@ class _$CommentCopyWithImpl<$Res, $Val extends Comment>
     Object? messageId = null,
     Object? userId = null,
     Object? content = null,
+    Object? imageUrl = freezed,
     Object? timestamp = null,
   }) {
     return _then(
@@ -412,6 +415,10 @@ class _$CommentCopyWithImpl<$Res, $Val extends Comment>
                 ? _value.content
                 : content // ignore: cast_nullable_to_non_nullable
                       as String,
+            imageUrl: freezed == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
             timestamp: null == timestamp
                 ? _value.timestamp
                 : timestamp // ignore: cast_nullable_to_non_nullable
@@ -435,6 +442,7 @@ abstract class _$$CommentImplCopyWith<$Res> implements $CommentCopyWith<$Res> {
     String messageId,
     String userId,
     String content,
+    String? imageUrl,
     @TimestampConverter() DateTime timestamp,
   });
 }
@@ -457,6 +465,7 @@ class __$$CommentImplCopyWithImpl<$Res>
     Object? messageId = null,
     Object? userId = null,
     Object? content = null,
+    Object? imageUrl = freezed,
     Object? timestamp = null,
   }) {
     return _then(
@@ -477,6 +486,10 @@ class __$$CommentImplCopyWithImpl<$Res>
             ? _value.content
             : content // ignore: cast_nullable_to_non_nullable
                   as String,
+        imageUrl: freezed == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
         timestamp: null == timestamp
             ? _value.timestamp
             : timestamp // ignore: cast_nullable_to_non_nullable
@@ -494,6 +507,7 @@ class _$CommentImpl implements _Comment {
     required this.messageId,
     required this.userId,
     required this.content,
+    this.imageUrl,
     @TimestampConverter() required this.timestamp,
   });
 
@@ -509,12 +523,14 @@ class _$CommentImpl implements _Comment {
   @override
   final String content;
   @override
+  final String? imageUrl;
+  @override
   @TimestampConverter()
   final DateTime timestamp;
 
   @override
   String toString() {
-    return 'Comment(id: $id, messageId: $messageId, userId: $userId, content: $content, timestamp: $timestamp)';
+    return 'Comment(id: $id, messageId: $messageId, userId: $userId, content: $content, imageUrl: $imageUrl, timestamp: $timestamp)';
   }
 
   @override
@@ -527,14 +543,23 @@ class _$CommentImpl implements _Comment {
                 other.messageId == messageId) &&
             (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.content, content) || other.content == content) &&
+            (identical(other.imageUrl, imageUrl) ||
+                other.imageUrl == imageUrl) &&
             (identical(other.timestamp, timestamp) ||
                 other.timestamp == timestamp));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, messageId, userId, content, timestamp);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    messageId,
+    userId,
+    content,
+    imageUrl,
+    timestamp,
+  );
 
   /// Create a copy of Comment
   /// with the given fields replaced by the non-null parameter values.
@@ -556,6 +581,7 @@ abstract class _Comment implements Comment {
     required final String messageId,
     required final String userId,
     required final String content,
+    final String? imageUrl,
     @TimestampConverter() required final DateTime timestamp,
   }) = _$CommentImpl;
 
@@ -569,6 +595,8 @@ abstract class _Comment implements Comment {
   String get userId;
   @override
   String get content;
+  @override
+  String? get imageUrl;
   @override
   @TimestampConverter()
   DateTime get timestamp;

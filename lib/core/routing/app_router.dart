@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../views/auth/login_screen.dart';
 import '../../views/auth/register_screen.dart';
 import '../../views/messaging/message_list_screen.dart';
+import '../../views/messaging/message_detail_screen_wrapper.dart';
 import '../../views/profile/profile_screen.dart';
 
 part 'app_router.g.dart';
@@ -45,6 +46,20 @@ GoRouter goRouter(Ref ref) {
               path: '/messages',
               name: 'messages',
               builder: (context, state) => const MessageListScreen(),
+              routes: [
+                GoRoute(
+                  path: 'detail/:messageId/:authorId',
+                  name: 'messageDetail',
+                  builder: (context, state) {
+                    final messageId = state.pathParameters['messageId']!;
+                    final authorId = state.pathParameters['authorId']!;
+                    return MessageDetailScreenWrapper(
+                      messageId: messageId,
+                      authorId: authorId,
+                    );
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: '/profile',

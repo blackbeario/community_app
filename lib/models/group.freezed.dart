@@ -24,6 +24,8 @@ mixin _$Group {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
+  List<String>? get taxonomy => throw _privateConstructorUsedError;
+  String? get icon => throw _privateConstructorUsedError;
   int get memberCount => throw _privateConstructorUsedError;
   bool get isPublic => throw _privateConstructorUsedError;
   @TimestampConverter()
@@ -47,6 +49,8 @@ abstract class $GroupCopyWith<$Res> {
     String id,
     String name,
     String description,
+    List<String>? taxonomy,
+    String? icon,
     int memberCount,
     bool isPublic,
     @TimestampConverter() DateTime createdAt,
@@ -71,6 +75,8 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
     Object? id = null,
     Object? name = null,
     Object? description = null,
+    Object? taxonomy = freezed,
+    Object? icon = freezed,
     Object? memberCount = null,
     Object? isPublic = null,
     Object? createdAt = null,
@@ -89,6 +95,14 @@ class _$GroupCopyWithImpl<$Res, $Val extends Group>
                 ? _value.description
                 : description // ignore: cast_nullable_to_non_nullable
                       as String,
+            taxonomy: freezed == taxonomy
+                ? _value.taxonomy
+                : taxonomy // ignore: cast_nullable_to_non_nullable
+                      as List<String>?,
+            icon: freezed == icon
+                ? _value.icon
+                : icon // ignore: cast_nullable_to_non_nullable
+                      as String?,
             memberCount: null == memberCount
                 ? _value.memberCount
                 : memberCount // ignore: cast_nullable_to_non_nullable
@@ -119,6 +133,8 @@ abstract class _$$GroupImplCopyWith<$Res> implements $GroupCopyWith<$Res> {
     String id,
     String name,
     String description,
+    List<String>? taxonomy,
+    String? icon,
     int memberCount,
     bool isPublic,
     @TimestampConverter() DateTime createdAt,
@@ -142,6 +158,8 @@ class __$$GroupImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? description = null,
+    Object? taxonomy = freezed,
+    Object? icon = freezed,
     Object? memberCount = null,
     Object? isPublic = null,
     Object? createdAt = null,
@@ -160,6 +178,14 @@ class __$$GroupImplCopyWithImpl<$Res>
             ? _value.description
             : description // ignore: cast_nullable_to_non_nullable
                   as String,
+        taxonomy: freezed == taxonomy
+            ? _value._taxonomy
+            : taxonomy // ignore: cast_nullable_to_non_nullable
+                  as List<String>?,
+        icon: freezed == icon
+            ? _value.icon
+            : icon // ignore: cast_nullable_to_non_nullable
+                  as String?,
         memberCount: null == memberCount
             ? _value.memberCount
             : memberCount // ignore: cast_nullable_to_non_nullable
@@ -184,10 +210,12 @@ class _$GroupImpl implements _Group {
     required this.id,
     required this.name,
     required this.description,
+    final List<String>? taxonomy,
+    this.icon,
     this.memberCount = 0,
     this.isPublic = true,
     @TimestampConverter() required this.createdAt,
-  });
+  }) : _taxonomy = taxonomy;
 
   factory _$GroupImpl.fromJson(Map<String, dynamic> json) =>
       _$$GroupImplFromJson(json);
@@ -198,6 +226,18 @@ class _$GroupImpl implements _Group {
   final String name;
   @override
   final String description;
+  final List<String>? _taxonomy;
+  @override
+  List<String>? get taxonomy {
+    final value = _taxonomy;
+    if (value == null) return null;
+    if (_taxonomy is EqualUnmodifiableListView) return _taxonomy;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final String? icon;
   @override
   @JsonKey()
   final int memberCount;
@@ -210,7 +250,7 @@ class _$GroupImpl implements _Group {
 
   @override
   String toString() {
-    return 'Group(id: $id, name: $name, description: $description, memberCount: $memberCount, isPublic: $isPublic, createdAt: $createdAt)';
+    return 'Group(id: $id, name: $name, description: $description, taxonomy: $taxonomy, icon: $icon, memberCount: $memberCount, isPublic: $isPublic, createdAt: $createdAt)';
   }
 
   @override
@@ -222,6 +262,8 @@ class _$GroupImpl implements _Group {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.description, description) ||
                 other.description == description) &&
+            const DeepCollectionEquality().equals(other._taxonomy, _taxonomy) &&
+            (identical(other.icon, icon) || other.icon == icon) &&
             (identical(other.memberCount, memberCount) ||
                 other.memberCount == memberCount) &&
             (identical(other.isPublic, isPublic) ||
@@ -237,6 +279,8 @@ class _$GroupImpl implements _Group {
     id,
     name,
     description,
+    const DeepCollectionEquality().hash(_taxonomy),
+    icon,
     memberCount,
     isPublic,
     createdAt,
@@ -261,6 +305,8 @@ abstract class _Group implements Group {
     required final String id,
     required final String name,
     required final String description,
+    final List<String>? taxonomy,
+    final String? icon,
     final int memberCount,
     final bool isPublic,
     @TimestampConverter() required final DateTime createdAt,
@@ -274,6 +320,10 @@ abstract class _Group implements Group {
   String get name;
   @override
   String get description;
+  @override
+  List<String>? get taxonomy;
+  @override
+  String? get icon;
   @override
   int get memberCount;
   @override
