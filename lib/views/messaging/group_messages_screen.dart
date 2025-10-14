@@ -1,3 +1,4 @@
+import 'package:community/views/messaging/create_message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -141,7 +142,7 @@ class GroupMessagesScreen extends ConsumerWidget {
                     message: message,
                     messageAuthor: messageUser,
                     onTap: () {
-                      context.goNamed(
+                      context.pushNamed(
                         'messageDetail',
                         pathParameters: {
                           'messageId': message.id,
@@ -158,7 +159,16 @@ class GroupMessagesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Navigate to create message screen for this group
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateMessageScreen(groupId: groupId),
+            ),
+          ).then((newMessage) {
+            if (newMessage != null) {
+              // Refresh messages list or add optimistically
+            }
+          });
         },
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: AppColors.white),
