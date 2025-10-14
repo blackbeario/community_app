@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +10,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/message.dart';
 import '../../services/auth_service.dart';
 import '../../services/message_service.dart';
+import '../../services/user_cache_sync_service.dart';
 
 /// Screen for creating a new message in a group
 class CreateMessageScreen extends ConsumerStatefulWidget {
@@ -29,9 +31,11 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
   final _formKey = GlobalKey<FormState>();
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
+  final GlobalKey<FlutterMentionsState> _mentionsKey = GlobalKey<FlutterMentionsState>();
 
   File? _selectedImage;
   bool _isSubmitting = false;
+  List<String> _mentionedUserIds = [];
 
   @override
   void dispose() {
@@ -112,7 +116,17 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
   }
 
   Future<void> _submitMessage() async {
-    if (!_formKey.currentState!.validate()) {
+    // Get content from FlutterMentions (use text for display, markupText has IDs)
+    final content = _mentionsKey.currentState?.controller?.text ?? '';
+
+    // Validate content
+    if (content.trim().isEmpty && _selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a message or add an image'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -151,7 +165,7 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
         id: messageId,
         groupId: widget.groupId,
         userId: currentUser.uid,
-        content: _contentController.text.trim(),
+        content: content.trim(),
         imageUrl: imageUrl,
         timestamp: DateTime.now(),
         likes: [],
@@ -290,14 +304,15 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
                       ),
                       const SizedBox(height: 16),
                     ],
-                    TextFormField(
-                      controller: _contentController,
-                      maxLines: null,
+                    FlutterMentions(
+                      key: _mentionsKey,
+                      suggestionPosition: SuggestionPosition.Top,
+                      maxLines: 10,
                       minLines: 5,
                       autofocus: true,
                       enabled: !_isSubmitting,
                       decoration: InputDecoration(
-                        hintText: 'What\'s on your mind?',
+                        hintText: 'What\'s on your mind? Type @ to mention someone',
                         hintStyle: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -320,13 +335,63 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
                         fillColor: AppColors.white,
                       ),
                       style: AppTextStyles.bodyMedium,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          if (_selectedImage == null) {
-                            return 'Please enter a message or add an image';
-                          }
+                      mentions: [
+                        Mention(
+                          trigger: '@',
+                          style: TextStyle(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          data: ref.watch(allCachedUsersProvider).when(
+                            data: (users) => users.map((user) => {
+                              'id': user.id,
+                              'display': user.name,
+                              'photo': user.photoUrl ?? '',
+                            }).toList(),
+                            loading: () => [],
+                            error: (_, __) => [],
+                          ),
+                          matchAll: true,
+                          suggestionBuilder: (data) {
+                            return Container(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage: data['photo'] != null && data['photo'].toString().isNotEmpty
+                                      ? NetworkImage(data['photo'] as String)
+                                      : null,
+                                    child: data['photo'] == null || data['photo'].toString().isEmpty
+                                      ? Text(
+                                          (data['display'] as String)[0].toUpperCase(),
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        )
+                                      : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    data['display'] as String,
+                                    style: AppTextStyles.bodyMedium,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                      onMentionAdd: (mention) {
+                        // Track mentioned user IDs
+                        final userId = mention['id'] as String;
+                        if (!_mentionedUserIds.contains(userId)) {
+                          setState(() {
+                            _mentionedUserIds.add(userId);
+                          });
                         }
-                        return null;
+                      },
+                      onChanged: (value) {
+                        // Update form validation
+                        _formKey.currentState?.validate();
                       },
                     ),
                     if (_selectedImage != null) ...[
@@ -376,20 +441,24 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
                     color: AppColors.primary,
                     tooltip: 'Add image',
                   ),
-                  // TODO: Add @ mention button here in the future
-                  // IconButton(
-                  //   onPressed: _isSubmitting ? null : _showMentionPicker,
-                  //   icon: const Icon(Icons.alternate_email),
-                  //   color: AppColors.primary,
-                  //   tooltip: 'Mention someone',
-                  // ),
                   const Spacer(),
-                  Text(
-                    '${_contentController.text.length} characters',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
+                  if (_mentionedUserIds.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.alternate_email, size: 16, color: AppColors.accent),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${_mentionedUserIds.length}',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
