@@ -1,12 +1,14 @@
 import 'package:community/viewmodels/auth/auth_viewmodel.dart';
-import 'package:community/viewmodels/messaging/message_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/user_avatar.dart';
-import '../../widgets/message_card.dart';
+import '../../widgets/featured_group_card.dart';
+import '../../widgets/group_card.dart';
+import '../../services/group_service.dart';
+import '../../viewmodels/messaging/message_viewmodel.dart';
 
 class MessageListScreen extends ConsumerStatefulWidget {
   const MessageListScreen({super.key});
@@ -15,19 +17,11 @@ class MessageListScreen extends ConsumerStatefulWidget {
   ConsumerState<MessageListScreen> createState() => _MessageListScreenState();
 }
 
-class _MessageListScreenState extends ConsumerState<MessageListScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _MessageListScreenState extends ConsumerState<MessageListScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -54,9 +48,12 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> with Sing
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
-                      UserAvatar(imageUrl: user.photoUrl, name: user.name, radius: 20),
+                      GestureDetector(
+                        onTap: () => context.go('/profile'),
+                        child: UserAvatar(imageUrl: user.photoUrl, name: user.name, radius: 20),
+                      ),
                       const Expanded(
-                        child: Center(child: Text('Messages', style: AppTextStyles.appBarTitle)),
+                        child: Center(child: Text('Community', style: AppTextStyles.appBarTitle)),
                       ),
                       const SizedBox(width: 40), // Balance the avatar width
                     ],
@@ -78,12 +75,15 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> with Sing
                           child: TextField(
                             controller: _searchController,
                             decoration: InputDecoration(
-                              hintText: 'Search in community feed',
+                              hintText: 'Search messages...',
                               hintStyle: AppTextStyles.inputHint,
                               prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             ),
+                            onChanged: (value) {
+                              // TODO: Implement search
+                            },
                           ),
                         ),
                       ),
@@ -101,125 +101,116 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> with Sing
                   ),
                 ),
 
-                // Tabs
-                Container(
-                  color: AppColors.surface,
-                  child: TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(text: 'Announcements'),
-                      Tab(text: 'Groups'),
-                    ],
-                  ),
-                ),
-
-                // Messages list
+                // Main content: Featured Announcements + Groups Grid
                 Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildMessagesList('announcements'),
-                      _buildMessagesList('groups'),
-                    ],
-                  ),
+                  child: _buildGroupsView(),
                 ),
               ],
             ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              // TODO: Navigate to create message screen
-              ref
-                  .read(messageViewModelProvider.notifier)
-                  .postMessage(groupId: 'all', userId: user.id, content: 'This is a test message');
-            },
-            child: const Icon(Icons.add),
           ),
         );
       },
     );
   }
 
-  Widget _buildMessagesList(String groupId) {
-    final messagesAsync = ref.watch(groupMessagesProvider(groupId));
+  Widget _buildGroupsView() {
+    final groupsAsync = ref.watch(selectableGroupsProvider);
 
-    return Container(
-      color: AppColors.background,
-      child: messagesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Error: $error'),
-            ],
-          ),
+    return groupsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error loading groups: $error'),
+          ],
         ),
-        data: (messages) {
-          if (messages.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.message_outlined, size: 64, color: AppColors.textSecondary.withValues(alpha: 0.5)),
-                  const SizedBox(height: 16),
-                  Text('No messages yet', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Be the first to post in the community!',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                  ),
-                ],
+      ),
+      data: (allGroups) {
+        // Separate announcements from other groups
+        final announcementsGroup = allGroups.firstWhere(
+          (g) => g.id == 'announcements',
+          orElse: () => allGroups.first,
+        );
+
+        final otherGroups = allGroups
+            .where((g) => g.id != 'announcements')
+            .toList();
+
+        // Get message count for announcements
+        final announcementsMessagesAsync = ref.watch(groupMessagesProvider('announcements'));
+        final announcementsCount = announcementsMessagesAsync.maybeWhen(
+          data: (messages) => messages.length,
+          orElse: () => null,
+        );
+
+        return Container(
+          color: AppColors.background,
+          child: CustomScrollView(
+            slivers: [
+              // Featured Announcements Card
+              SliverToBoxAdapter(
+                child: FeaturedGroupCard(
+                  group: announcementsGroup,
+                  messageCount: announcementsCount,
+                  onTap: () {
+                    context.push('/messages/group/${announcementsGroup.id}', extra: announcementsGroup);
+                  },
+                ),
               ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              final message = messages[index];
-              final messageUserAsync = ref.watch(messageUserProvider(message.userId));
-
-              return messageUserAsync.when(
-                loading: () => const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(child: CircularProgressIndicator()),
+          
+              // Groups Grid
+              if (otherGroups.isEmpty)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.group_outlined,
+                            size: 64,
+                            color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No other groups available',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                error: (error, stack) => Card(
-                  child: Padding(padding: const EdgeInsets.all(16.0), child: Text('Error loading user: $error')),
-                ),
-                data: (messageUser) {
-                  if (messageUser == null) {
-                    return const Card(
-                      child: Padding(padding: EdgeInsets.all(16.0), child: Text('User not found')),
-                    );
-                  }
-
-                  return MessageCard(
-                    message: message,
-                    messageAuthor: messageUser,
-                    onTap: () {
-                      context.goNamed(
-                        'messageDetail',
-                        pathParameters: {
-                          'messageId': message.id,
-                          'authorId': messageUser.id,
+                )
+              else
+                SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 0,
+                    childAspectRatio: 0.85,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final group = otherGroups[index];
+                      return GroupCard(
+                        group: group,
+                        onTap: () {
+                          context.push('/messages/group/${group.id}', extra: group);
                         },
                       );
                     },
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
+                    childCount: otherGroups.length,
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
-
 }

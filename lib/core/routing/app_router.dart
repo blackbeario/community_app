@@ -7,7 +7,9 @@ import '../../views/auth/login_screen.dart';
 import '../../views/auth/register_screen.dart';
 import '../../views/messaging/message_list_screen.dart';
 import '../../views/messaging/message_detail_screen_wrapper.dart';
+import '../../views/messaging/group_messages_screen.dart';
 import '../../views/profile/profile_screen.dart';
+import '../../models/group.dart';
 
 part 'app_router.g.dart';
 
@@ -56,6 +58,18 @@ GoRouter goRouter(Ref ref) {
                     return MessageDetailScreenWrapper(
                       messageId: messageId,
                       authorId: authorId,
+                    );
+                  },
+                ),
+                GoRoute(
+                  path: 'group/:groupId',
+                  name: 'groupMessages',
+                  builder: (context, state) {
+                    final groupId = state.pathParameters['groupId']!;
+                    final group = state.extra as Group?;
+                    return GroupMessagesScreen(
+                      groupId: groupId,
+                      group: group,
                     );
                   },
                 ),
