@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../services/auth_service.dart';
 import '../../views/auth/login_screen.dart';
 import '../../views/auth/register_screen.dart';
 import '../../views/messaging/message_list_screen.dart';
+import '../../views/messaging/message_detail_screen_wrapper.dart';
+import '../../views/messaging/group_messages_screen.dart';
 import '../../views/profile/profile_screen.dart';
+import '../../models/group.dart';
 
-class AppRouter {
-  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final _shellNavigatorKey = GlobalKey<NavigatorState>();
+part 'app_router.g.dart';
 
-  static GoRouter router(WidgetRef ref) {
-    return GoRouter(
-      navigatorKey: _rootNavigatorKey,
+final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+
+@riverpod
+GoRouter goRouter(Ref ref) {
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
       initialLocation: '/messages',
       redirect: (context, state) {
         final user = ref.read(currentUserProvider);
@@ -43,6 +48,32 @@ class AppRouter {
               path: '/messages',
               name: 'messages',
               builder: (context, state) => const MessageListScreen(),
+              routes: [
+                GoRoute(
+                  path: 'detail/:messageId/:authorId',
+                  name: 'messageDetail',
+                  builder: (context, state) {
+                    final messageId = state.pathParameters['messageId']!;
+                    final authorId = state.pathParameters['authorId']!;
+                    return MessageDetailScreenWrapper(
+                      messageId: messageId,
+                      authorId: authorId,
+                    );
+                  },
+                ),
+                GoRoute(
+                  path: 'group/:groupId',
+                  name: 'groupMessages',
+                  builder: (context, state) {
+                    final groupId = state.pathParameters['groupId']!;
+                    final group = state.extra as Group?;
+                    return GroupMessagesScreen(
+                      groupId: groupId,
+                      group: group,
+                    );
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: '/profile',
@@ -62,8 +93,7 @@ class AppRouter {
           builder: (context, state) => const RegisterScreen(),
         ),
       ],
-    );
-  }
+  );
 }
 
 class MainScaffold extends ConsumerWidget {

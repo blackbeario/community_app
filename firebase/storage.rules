@@ -34,6 +34,17 @@ service firebase.storage {
                       request.resource.contentType.matches('image/.*');
     }
 
+    // Comment images
+    match /comments/{messageId}/{fileName} {
+      // Authenticated users can read comment images
+      allow read: if isAuthenticated();
+
+      // Authenticated users can upload comment images
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+                      request.resource.contentType.matches('image/.*');
+    }
+
     // DM attachments
     match /conversations/{conversationId}/{fileName} {
       // Only conversation participants can access

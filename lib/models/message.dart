@@ -27,22 +27,30 @@ class Comment with _$Comment {
     required String messageId,
     required String userId,
     required String content,
+    String? imageUrl,
     @TimestampConverter() required DateTime timestamp,
   }) = _Comment;
 
   factory Comment.fromJson(Map<String, dynamic> json) => _$CommentFromJson(json);
 }
 
-class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
+class TimestampConverter implements JsonConverter<DateTime, dynamic> {
   const TimestampConverter();
 
   @override
-  DateTime fromJson(Timestamp timestamp) {
-    return timestamp.toDate();
+  DateTime fromJson(dynamic json) {
+    if (json is Timestamp) {
+      return json.toDate();
+    } else if (json is int) {
+      return DateTime.fromMillisecondsSinceEpoch(json);
+    } else if (json is DateTime) {
+      return json;
+    }
+    throw ArgumentError('Cannot convert $json to DateTime');
   }
 
   @override
-  Timestamp toJson(DateTime dateTime) {
+  dynamic toJson(DateTime dateTime) {
     return Timestamp.fromDate(dateTime);
   }
 }

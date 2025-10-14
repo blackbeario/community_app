@@ -24,3 +24,5 @@ The Community mobile app is a neighborhood-driven solution for residents to inte
 * Cloud Functions
 * Riverpod
 * Freezed
+* SQLite FTS5 Caching
+* Scalable pre-cached searching

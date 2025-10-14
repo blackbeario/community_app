@@ -13,9 +13,7 @@ _$MessageImpl _$$MessageImplFromJson(Map<String, dynamic> json) =>
       userId: json['userId'] as String,
       content: json['content'] as String,
       imageUrl: json['imageUrl'] as String?,
-      timestamp: const TimestampConverter().fromJson(
-        json['timestamp'] as Timestamp,
-      ),
+      timestamp: const TimestampConverter().fromJson(json['timestamp']),
       likes:
           (json['likes'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
@@ -40,9 +38,8 @@ _$CommentImpl _$$CommentImplFromJson(Map<String, dynamic> json) =>
       messageId: json['messageId'] as String,
       userId: json['userId'] as String,
       content: json['content'] as String,
-      timestamp: const TimestampConverter().fromJson(
-        json['timestamp'] as Timestamp,
-      ),
+      imageUrl: json['imageUrl'] as String?,
+      timestamp: const TimestampConverter().fromJson(json['timestamp']),
     );
 
 Map<String, dynamic> _$$CommentImplToJson(_$CommentImpl instance) =>
@@ -51,5 +48,6 @@ Map<String, dynamic> _$$CommentImplToJson(_$CommentImpl instance) =>
       'messageId': instance.messageId,
       'userId': instance.userId,
       'content': instance.content,
+      'imageUrl': instance.imageUrl,
       'timestamp': const TimestampConverter().toJson(instance.timestamp),
     };

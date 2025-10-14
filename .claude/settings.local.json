@@ -8,7 +8,18 @@
       "Bash(flutterfire:*)",
       "Bash(dart pub global activate:*)",
       "Bash(dart run build_runner:*)",
-      "Bash(flutter run:*)"
+      "Bash(flutter run:*)",
+      "Bash(pod install:*)",
+      "Bash(export LANG=en_US.UTF-8)",
+      "Bash(xcodebuild:*)",
+      "Bash(swift --version)",
+      "Bash(flutter clean:*)",
+      "Bash(firebase projects:list:*)",
+      "Bash(cat:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(firebase use:*)",
+      "Bash([ -d \"ios\" ])",
+      "Bash([ -d \"android\" ])"
     ],
     "deny": [],
     "ask": []

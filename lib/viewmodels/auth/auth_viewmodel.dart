@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/auth_service.dart';
@@ -74,17 +75,17 @@ class AuthViewModel extends _$AuthViewModel {
 }
 
 @riverpod
-Stream<firebase_auth.User?> authState(AuthStateRef ref) {
+Stream<firebase_auth.User?> authState(Ref ref) {
   return ref.watch(authServiceProvider).authStateChanges;
 }
 
 @riverpod
-firebase_auth.User? currentFirebaseUser(CurrentFirebaseUserRef ref) {
+firebase_auth.User? currentFirebaseUser(Ref ref) {
   return ref.watch(authServiceProvider).currentUser;
 }
 
 @riverpod
-Stream<User?> currentAppUser(CurrentAppUserRef ref) async* {
+Stream<User?> currentAppUser(Ref ref) async* {
   final authUser = ref.watch(currentFirebaseUserProvider);
   
   if (authUser != null) {

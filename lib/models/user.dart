@@ -11,6 +11,8 @@ class User with _$User {
     required String name,
     required String email,
     String? photoUrl,
+    String? coverPhotoUrl,
+    String? bio,
     String? phoneNumber,
     String? unitNumber,
     @TimestampConverter() required DateTime createdAt,

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/config/firebase_providers.dart';
 import '../models/user.dart';
@@ -87,7 +88,7 @@ class UserService {
     final querySnapshot = await _firestore
         .collection(_collection)
         .where('name', isGreaterThanOrEqualTo: searchTerm)
-        .where('name', isLessThan: searchTerm + '\uf8ff')
+        .where('name', isLessThan: '$searchTerm\uf8ff')
         .get();
 
     return querySnapshot.docs
@@ -126,6 +127,6 @@ class UserService {
 }
 
 @riverpod
-UserService userService(UserServiceRef ref) {
+UserService userService(Ref ref) {
   return UserService(ref.watch(firebaseFirestoreProvider));
 }

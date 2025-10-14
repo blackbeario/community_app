@@ -6,7 +6,7 @@ part of 'firebase_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$firebaseAuthHash() => r'7791bf70ce0f01bf991a53a76abc915478673c0b';
+String _$firebaseAuthHash() => r'912368c3df3f72e4295bf7a8cda93b9c5749d923';
 
 /// Provider for FirebaseAuth instance
 ///
@@ -25,7 +25,7 @@ final firebaseAuthProvider = AutoDisposeProvider<FirebaseAuth>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FirebaseAuthRef = AutoDisposeProviderRef<FirebaseAuth>;
-String _$firebaseFirestoreHash() => r'230b9276da2e44bb1aa6b300e1ddbb2f93c422da';
+String _$firebaseFirestoreHash() => r'963402713bf9b7cc1fb259d619d9b0184d4dcec1';
 
 /// Provider for FirebaseFirestore instance
 ///
@@ -45,7 +45,7 @@ final firebaseFirestoreProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FirebaseFirestoreRef = AutoDisposeProviderRef<FirebaseFirestore>;
-String _$firebaseStorageHash() => r'9ece783a064077980d64000c5d6f0b1846ff5c4c';
+String _$firebaseStorageHash() => r'aa6946fd2a3470c4f3e2e72956076591cc63b435';
 
 /// Provider for FirebaseStorage instance
 ///
@@ -64,7 +64,7 @@ final firebaseStorageProvider = AutoDisposeProvider<FirebaseStorage>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FirebaseStorageRef = AutoDisposeProviderRef<FirebaseStorage>;
-String _$firebaseMessagingHash() => r'12efd3604ac737ea5a08cfad434a0002f21506c6';
+String _$firebaseMessagingHash() => r'6abf9bf6d98c4ba311760139587b2995df4c1508';
 
 /// Provider for FirebaseMessaging instance
 ///
@@ -84,7 +84,7 @@ final firebaseMessagingProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FirebaseMessagingRef = AutoDisposeProviderRef<FirebaseMessaging>;
-String _$authStateChangesHash() => r'246216fb58ccd90cdc0648eb76dc26ef40047afa';
+String _$authStateChangesHash() => r'7e2230d665098f97101510d80be5c9dd82d44903';
 
 /// Provider for current auth state
 ///
@@ -103,7 +103,7 @@ final authStateChangesProvider = AutoDisposeStreamProvider<User?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthStateChangesRef = AutoDisposeStreamProviderRef<User?>;
-String _$currentUserHash() => r'550582aa5e6e9ac1f9baaed87f47ae2ad0bf954c';
+String _$currentUserHash() => r'1fbe35cde0115bc8d60adddedc24ac5985c204d1';
 
 /// Provider for current user
 ///

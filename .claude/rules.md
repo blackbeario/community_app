@@ -352,6 +352,72 @@ class MessageCard extends StatelessWidget {
 - Keep widgets small and focused
 - Store in `lib/widgets/` directory
 
+### Child Widget Organization
+
+**ALWAYS create separate widget classes instead of widget builder methods:**
+
+❌ **DON'T do this:**
+```dart
+class ProfileScreen extends ConsumerWidget {
+  Widget _buildActionButton({required IconData icon}) {
+    return ElevatedButton(
+      child: Icon(icon),
+      onPressed: () {},
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(...);
+  }
+}
+```
+
+✅ **DO this instead:**
+```dart
+// Create separate widget files in a widgets/ subdirectory
+// views/profile/widgets/profile_action_button.dart
+class ProfileActionButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const ProfileActionButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      child: Icon(icon),
+      onPressed: onPressed,
+    );
+  }
+}
+
+// views/profile/profile_screen.dart
+class ProfileScreen extends ConsumerWidget {
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ProfileActionButton(
+      icon: Icons.edit,
+      onPressed: () {},
+    );
+  }
+}
+```
+
+**Benefits:**
+- Better code organization and reusability
+- Easier to test individual widgets
+- Clearer widget tree and dependencies
+- Follows Flutter best practices
+- Enables widget composition
+
+**Organization:**
+- Store screen-specific widgets in `views/{feature}/widgets/`
+- Store shared widgets in `lib/widgets/`
+- One widget per file
+
 ---
 
 ## 7. Code Generation

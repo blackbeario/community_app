@@ -25,6 +25,8 @@ mixin _$User {
   String get name => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String? get photoUrl => throw _privateConstructorUsedError;
+  String? get coverPhotoUrl => throw _privateConstructorUsedError;
+  String? get bio => throw _privateConstructorUsedError;
   String? get phoneNumber => throw _privateConstructorUsedError;
   String? get unitNumber => throw _privateConstructorUsedError;
   @TimestampConverter()
@@ -51,6 +53,8 @@ abstract class $UserCopyWith<$Res> {
     String name,
     String email,
     String? photoUrl,
+    String? coverPhotoUrl,
+    String? bio,
     String? phoneNumber,
     String? unitNumber,
     @TimestampConverter() DateTime createdAt,
@@ -78,6 +82,8 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? name = null,
     Object? email = null,
     Object? photoUrl = freezed,
+    Object? coverPhotoUrl = freezed,
+    Object? bio = freezed,
     Object? phoneNumber = freezed,
     Object? unitNumber = freezed,
     Object? createdAt = null,
@@ -101,6 +107,14 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
             photoUrl: freezed == photoUrl
                 ? _value.photoUrl
                 : photoUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            coverPhotoUrl: freezed == coverPhotoUrl
+                ? _value.coverPhotoUrl
+                : coverPhotoUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            bio: freezed == bio
+                ? _value.bio
+                : bio // ignore: cast_nullable_to_non_nullable
                       as String?,
             phoneNumber: freezed == phoneNumber
                 ? _value.phoneNumber
@@ -141,6 +155,8 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
     String name,
     String email,
     String? photoUrl,
+    String? coverPhotoUrl,
+    String? bio,
     String? phoneNumber,
     String? unitNumber,
     @TimestampConverter() DateTime createdAt,
@@ -165,6 +181,8 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? name = null,
     Object? email = null,
     Object? photoUrl = freezed,
+    Object? coverPhotoUrl = freezed,
+    Object? bio = freezed,
     Object? phoneNumber = freezed,
     Object? unitNumber = freezed,
     Object? createdAt = null,
@@ -188,6 +206,14 @@ class __$$UserImplCopyWithImpl<$Res>
         photoUrl: freezed == photoUrl
             ? _value.photoUrl
             : photoUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        coverPhotoUrl: freezed == coverPhotoUrl
+            ? _value.coverPhotoUrl
+            : coverPhotoUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        bio: freezed == bio
+            ? _value.bio
+            : bio // ignore: cast_nullable_to_non_nullable
                   as String?,
         phoneNumber: freezed == phoneNumber
             ? _value.phoneNumber
@@ -222,6 +248,8 @@ class _$UserImpl implements _User {
     required this.name,
     required this.email,
     this.photoUrl,
+    this.coverPhotoUrl,
+    this.bio,
     this.phoneNumber,
     this.unitNumber,
     @TimestampConverter() required this.createdAt,
@@ -240,6 +268,10 @@ class _$UserImpl implements _User {
   final String email;
   @override
   final String? photoUrl;
+  @override
+  final String? coverPhotoUrl;
+  @override
+  final String? bio;
   @override
   final String? phoneNumber;
   @override
@@ -262,7 +294,7 @@ class _$UserImpl implements _User {
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, email: $email, photoUrl: $photoUrl, phoneNumber: $phoneNumber, unitNumber: $unitNumber, createdAt: $createdAt, groups: $groups, isAdmin: $isAdmin)';
+    return 'User(id: $id, name: $name, email: $email, photoUrl: $photoUrl, coverPhotoUrl: $coverPhotoUrl, bio: $bio, phoneNumber: $phoneNumber, unitNumber: $unitNumber, createdAt: $createdAt, groups: $groups, isAdmin: $isAdmin)';
   }
 
   @override
@@ -275,6 +307,9 @@ class _$UserImpl implements _User {
             (identical(other.email, email) || other.email == email) &&
             (identical(other.photoUrl, photoUrl) ||
                 other.photoUrl == photoUrl) &&
+            (identical(other.coverPhotoUrl, coverPhotoUrl) ||
+                other.coverPhotoUrl == coverPhotoUrl) &&
+            (identical(other.bio, bio) || other.bio == bio) &&
             (identical(other.phoneNumber, phoneNumber) ||
                 other.phoneNumber == phoneNumber) &&
             (identical(other.unitNumber, unitNumber) ||
@@ -293,6 +328,8 @@ class _$UserImpl implements _User {
     name,
     email,
     photoUrl,
+    coverPhotoUrl,
+    bio,
     phoneNumber,
     unitNumber,
     createdAt,
@@ -320,6 +357,8 @@ abstract class _User implements User {
     required final String name,
     required final String email,
     final String? photoUrl,
+    final String? coverPhotoUrl,
+    final String? bio,
     final String? phoneNumber,
     final String? unitNumber,
     @TimestampConverter() required final DateTime createdAt,
@@ -337,6 +376,10 @@ abstract class _User implements User {
   String get email;
   @override
   String? get photoUrl;
+  @override
+  String? get coverPhotoUrl;
+  @override
+  String? get bio;
   @override
   String? get phoneNumber;
   @override

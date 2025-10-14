@@ -6,7 +6,7 @@ part of 'auth_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authServiceHash() => r'875fb058fc8477dbc39f3c6cd54751c5cc83660e';
+String _$authServiceHash() => r'ac0fb87c9db72a1b3f29aaf90428ac20b82a7b4e';
 
 /// See also [authService].
 @ProviderFor(authService)
@@ -23,7 +23,7 @@ final authServiceProvider = AutoDisposeProvider<AuthService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthServiceRef = AutoDisposeProviderRef<AuthService>;
-String _$authStateChangesHash() => r'e4bf937b0dadc4beb0670493cfe2c65336eaa53f';
+String _$authStateChangesHash() => r'605276926fb9b414f1ef8f4cbddede20b37a871b';
 
 /// See also [authStateChanges].
 @ProviderFor(authStateChanges)
@@ -41,7 +41,7 @@ final authStateChangesProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthStateChangesRef = AutoDisposeStreamProviderRef<firebase_auth.User?>;
-String _$currentUserHash() => r'76dbb22eebb489fad1f56d689d811a0013bb29d6';
+String _$currentUserHash() => r'543cbe253c4f2951b4cb25c26f626e05e2a715d3';
 
 /// See also [currentUser].
 @ProviderFor(currentUser)

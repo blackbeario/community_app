@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/config/firebase_providers.dart';
 import '../models/message.dart';
@@ -27,6 +28,22 @@ class MessageService {
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => Message.fromJson(doc.data()))
+            .toList());
+  }
+
+  Stream<List<Message>> getAllMessages({int? limit}) {
+    Query query = _firestore
+        .collection(_messagesCollection)
+        .orderBy('timestamp', descending: true);
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    return query
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Message.fromJson(doc.data() as Map<String, dynamic>))
             .toList());
   }
 
@@ -63,6 +80,40 @@ class MessageService {
         .toList();
   }
 
+  Future<QuerySnapshot> getAllMessagesPaginated({
+    DocumentSnapshot? lastDocument,
+    int limit = 20,
+  }) async {
+    Query query = _firestore
+        .collection(_messagesCollection)
+        .orderBy('timestamp', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    return await query.get();
+  }
+
+  Future<QuerySnapshot> getGroupMessagesPaginated({
+    required String groupId,
+    DocumentSnapshot? lastDocument,
+    int limit = 20,
+  }) async {
+    Query query = _firestore
+        .collection(_messagesCollection)
+        .where('groupId', isEqualTo: groupId)
+        .orderBy('timestamp', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    return await query.get();
+  }
+
   Future<Message?> getMessage(String messageId) async {
     final doc = await _firestore
         .collection(_messagesCollection)
@@ -73,6 +124,19 @@ class MessageService {
       return Message.fromJson(doc.data()!);
     }
     return null;
+  }
+
+  Stream<Message?> getMessageStream(String messageId) {
+    return _firestore
+        .collection(_messagesCollection)
+        .doc(messageId)
+        .snapshots()
+        .map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return Message.fromJson(doc.data()!);
+      }
+      return null;
+    });
   }
 
   Future<void> likeMessage(String messageId, String userId) async {
@@ -140,23 +204,31 @@ class MessageService {
     await batch.commit();
   }
 
+  /// Search messages in a specific group
+  /// Note: This fetches recent messages and filters client-side since Firestore
+  /// doesn't support full-text search. For better performance with large datasets,
+  /// consider using the MessageCacheService with SQLite FTS5.
   Future<List<Message>> searchMessages(String groupId, String searchTerm) async {
+    // Fetch recent messages from the group (limit to avoid excessive reads)
     final querySnapshot = await _firestore
         .collection(_messagesCollection)
         .where('groupId', isEqualTo: groupId)
-        .where('content', isGreaterThanOrEqualTo: searchTerm)
-        .where('content', isLessThan: '$searchTerm\uf8ff')
-        .orderBy('content')
         .orderBy('timestamp', descending: true)
+        .limit(100) // Limit to recent 100 messages to control costs
         .get();
 
-    return querySnapshot.docs
+    // Filter client-side for case-insensitive search
+    final searchLower = searchTerm.toLowerCase();
+    final results = querySnapshot.docs
         .map((doc) => Message.fromJson(doc.data()))
+        .where((message) => message.content.toLowerCase().contains(searchLower))
         .toList();
+
+    return results;
   }
 }
 
 @riverpod
-MessageService messageService(MessageServiceRef ref) {
+MessageService messageService(Ref ref) {
   return MessageService(ref.watch(firebaseFirestoreProvider));
 }

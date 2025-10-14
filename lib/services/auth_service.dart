@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/config/firebase_providers.dart';
-import '../models/user.dart' as app_user;
 
 part 'auth_service.g.dart';
 
@@ -99,16 +99,16 @@ class AuthException implements Exception {
 }
 
 @riverpod
-AuthService authService(AuthServiceRef ref) {
+AuthService authService(Ref ref) {
   return AuthService(ref.watch(firebaseAuthProvider));
 }
 
 @riverpod
-Stream<firebase_auth.User?> authStateChanges(AuthStateChangesRef ref) {
+Stream<firebase_auth.User?> authStateChanges(Ref ref) {
   return ref.watch(authServiceProvider).authStateChanges;
 }
 
 @riverpod
-firebase_auth.User? currentUser(CurrentUserRef ref) {
+firebase_auth.User? currentUser(Ref ref) {
   return ref.watch(authServiceProvider).currentUser;
 }

@@ -10,6 +10,8 @@ class Group with _$Group {
     required String id,
     required String name,
     required String description,
+    List<String>? taxonomy,
+    String? icon,
     @Default(0) int memberCount,
     @Default(true) bool isPublic,
     @TimestampConverter() required DateTime createdAt,
