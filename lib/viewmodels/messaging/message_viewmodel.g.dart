@@ -6,7 +6,7 @@ part of 'message_viewmodel.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$groupMessagesHash() => r'e17c27bfc88f28632c31f76e01924a96070d7740';
+String _$groupMessagesHash() => r'cd7dfd28b8d87440c01838cd9105ce8a5faa2cd6';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,21 +30,25 @@ class _SystemHash {
 }
 
 /// Stream provider for recent messages in a specific group (limit: 20)
+/// Automatically caches messages for offline search
 ///
 /// Copied from [groupMessages].
 @ProviderFor(groupMessages)
 const groupMessagesProvider = GroupMessagesFamily();
 
 /// Stream provider for recent messages in a specific group (limit: 20)
+/// Automatically caches messages for offline search
 ///
 /// Copied from [groupMessages].
 class GroupMessagesFamily extends Family<AsyncValue<List<Message>>> {
   /// Stream provider for recent messages in a specific group (limit: 20)
+  /// Automatically caches messages for offline search
   ///
   /// Copied from [groupMessages].
   const GroupMessagesFamily();
 
   /// Stream provider for recent messages in a specific group (limit: 20)
+  /// Automatically caches messages for offline search
   ///
   /// Copied from [groupMessages].
   GroupMessagesProvider call(String groupId) {
@@ -74,10 +78,12 @@ class GroupMessagesFamily extends Family<AsyncValue<List<Message>>> {
 }
 
 /// Stream provider for recent messages in a specific group (limit: 20)
+/// Automatically caches messages for offline search
 ///
 /// Copied from [groupMessages].
 class GroupMessagesProvider extends AutoDisposeStreamProvider<List<Message>> {
   /// Stream provider for recent messages in a specific group (limit: 20)
+  /// Automatically caches messages for offline search
   ///
   /// Copied from [groupMessages].
   GroupMessagesProvider(String groupId)

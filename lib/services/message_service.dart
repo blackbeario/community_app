@@ -204,19 +204,27 @@ class MessageService {
     await batch.commit();
   }
 
+  /// Search messages in a specific group
+  /// Note: This fetches recent messages and filters client-side since Firestore
+  /// doesn't support full-text search. For better performance with large datasets,
+  /// consider using the MessageCacheService with SQLite FTS5.
   Future<List<Message>> searchMessages(String groupId, String searchTerm) async {
+    // Fetch recent messages from the group (limit to avoid excessive reads)
     final querySnapshot = await _firestore
         .collection(_messagesCollection)
         .where('groupId', isEqualTo: groupId)
-        .where('content', isGreaterThanOrEqualTo: searchTerm)
-        .where('content', isLessThan: '$searchTerm\uf8ff')
-        .orderBy('content')
         .orderBy('timestamp', descending: true)
+        .limit(100) // Limit to recent 100 messages to control costs
         .get();
 
-    return querySnapshot.docs
+    // Filter client-side for case-insensitive search
+    final searchLower = searchTerm.toLowerCase();
+    final results = querySnapshot.docs
         .map((doc) => Message.fromJson(doc.data()))
+        .where((message) => message.content.toLowerCase().contains(searchLower))
         .toList();
+
+    return results;
   }
 }
 

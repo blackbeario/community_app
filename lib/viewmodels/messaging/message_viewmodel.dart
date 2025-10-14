@@ -1,20 +1,36 @@
 import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../models/message.dart';
 import '../../models/user.dart';
 import '../../services/message_service.dart';
 import '../../services/user_service.dart';
+import '../../services/message_cache_service.dart';
 
 part 'message_viewmodel.g.dart';
 
 /// Stream provider for recent messages in a specific group (limit: 20)
+/// Automatically caches messages for offline search
 @riverpod
 Stream<List<Message>> groupMessages(Ref ref, String groupId) {
   final service = ref.watch(messageServiceProvider);
-  return service.getMessagesLimit(groupId, 20);
+  final cacheService = ref.watch(messageCacheServiceProvider);
+
+  return service.getMessagesLimit(groupId, 20).asyncMap((messages) async {
+    // Cache messages in the background for offline search
+    if (messages.isNotEmpty) {
+      try {
+        await cacheService.cacheMessages(messages);
+      } catch (e) {
+        // Don't block the stream if caching fails
+        debugPrint('Failed to cache messages: $e');
+      }
+    }
+    return messages;
+  });
 }
 
 /// Provider to get user details for a message

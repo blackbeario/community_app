@@ -1,7 +1,11 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/message.dart';
+
+part 'message_cache_service.g.dart';
 
 /// Service for caching messages locally with FTS5 full-text search
 /// Enables offline search and reduces Firestore query costs
@@ -20,7 +24,7 @@ class MessageCacheService {
   /// Initialize SQLite database with FTS5
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final dbFilePath = path.join(dbPath, 'community_messages.db');
+    final dbFilePath = p.join(dbPath, 'community_messages.db');
 
     return await openDatabase(
       dbFilePath,
@@ -159,7 +163,7 @@ class MessageCacheService {
       results = await db.rawQuery('''
         SELECT m.* FROM $_messagesTable m
         INNER JOIN $_ftsTable fts ON m.id = fts.id
-        WHERE fts MATCH ? AND m.groupId = ?
+        WHERE $_ftsTable MATCH ? AND m.groupId = ?
         ORDER BY m.timestamp DESC
         LIMIT ?
       ''', [ftsQuery, groupId, limit]);
@@ -168,7 +172,7 @@ class MessageCacheService {
       results = await db.rawQuery('''
         SELECT m.* FROM $_messagesTable m
         INNER JOIN $_ftsTable fts ON m.id = fts.id
-        WHERE fts MATCH ?
+        WHERE $_ftsTable MATCH ?
         ORDER BY m.timestamp DESC
         LIMIT ?
       ''', [ftsQuery, limit]);
@@ -271,4 +275,12 @@ class MessageCacheService {
       _database = null;
     }
   }
+}
+
+/// Provider for MessageCacheService
+@riverpod
+MessageCacheService messageCacheService(Ref ref) {
+  final service = MessageCacheService();
+  ref.onDispose(() => service.close());
+  return service;
 }
