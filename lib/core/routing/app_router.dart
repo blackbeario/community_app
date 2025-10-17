@@ -16,6 +16,9 @@ part 'app_router.g.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+// Export root navigator key for use in FCM service
+final rootNavigatorKey = _rootNavigatorKey;
+
 @riverpod
 GoRouter goRouter(Ref ref) {
   return GoRouter(

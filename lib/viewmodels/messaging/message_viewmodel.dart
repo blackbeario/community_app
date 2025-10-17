@@ -103,6 +103,7 @@ class MessageViewModel extends _$MessageViewModel {
     required String userId,
     required String content,
     File? imageFile,
+    List<String> mentions = const [],
   }) async {
     state = await AsyncValue.guard(() async {
       String? imageUrl;
@@ -119,6 +120,7 @@ class MessageViewModel extends _$MessageViewModel {
         content: content,
         imageUrl: imageUrl,
         timestamp: DateTime.now(),
+        mentions: mentions,
       );
       await ref.read(messageServiceProvider).addComment(comment);
     });

@@ -15,6 +15,7 @@ class Message with _$Message {
     @TimestampConverter() required DateTime timestamp,
     @Default([]) List<String> likes,
     @Default(0) int commentCount,
+    @Default([]) List<String> mentions,
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
@@ -29,6 +30,7 @@ class Comment with _$Comment {
     required String content,
     String? imageUrl,
     @TimestampConverter() required DateTime timestamp,
+    @Default([]) List<String> mentions,
   }) = _Comment;
 
   factory Comment.fromJson(Map<String, dynamic> json) => _$CommentFromJson(json);

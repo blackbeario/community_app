@@ -1,4 +1,4 @@
-package com.example.community
+package io.vibesoftware.community
 
 import io.flutter.embedding.android.FlutterActivity
 

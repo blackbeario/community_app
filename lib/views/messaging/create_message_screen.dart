@@ -35,7 +35,7 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
 
   File? _selectedImage;
   bool _isSubmitting = false;
-  List<String> _mentionedUserIds = [];
+  final List<String> _mentionedUserIds = [];
 
   @override
   void dispose() {
@@ -170,6 +170,7 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
         timestamp: DateTime.now(),
         likes: [],
         commentCount: 0,
+        mentions: _mentionedUserIds,
       );
 
       await messageService.postMessage(message);
@@ -306,7 +307,7 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
                     ],
                     FlutterMentions(
                       key: _mentionsKey,
-                      suggestionPosition: SuggestionPosition.Top,
+                      suggestionPosition: SuggestionPosition.Bottom,
                       maxLines: 10,
                       minLines: 5,
                       autofocus: true,

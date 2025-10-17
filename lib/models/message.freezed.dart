@@ -30,6 +30,7 @@ mixin _$Message {
   DateTime get timestamp => throw _privateConstructorUsedError;
   List<String> get likes => throw _privateConstructorUsedError;
   int get commentCount => throw _privateConstructorUsedError;
+  List<String> get mentions => throw _privateConstructorUsedError;
 
   /// Serializes this Message to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -54,6 +55,7 @@ abstract class $MessageCopyWith<$Res> {
     @TimestampConverter() DateTime timestamp,
     List<String> likes,
     int commentCount,
+    List<String> mentions,
   });
 }
 
@@ -80,6 +82,7 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? timestamp = null,
     Object? likes = null,
     Object? commentCount = null,
+    Object? mentions = null,
   }) {
     return _then(
       _value.copyWith(
@@ -115,6 +118,10 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
                 ? _value.commentCount
                 : commentCount // ignore: cast_nullable_to_non_nullable
                       as int,
+            mentions: null == mentions
+                ? _value.mentions
+                : mentions // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
           )
           as $Val,
     );
@@ -138,6 +145,7 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
     @TimestampConverter() DateTime timestamp,
     List<String> likes,
     int commentCount,
+    List<String> mentions,
   });
 }
 
@@ -163,6 +171,7 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? timestamp = null,
     Object? likes = null,
     Object? commentCount = null,
+    Object? mentions = null,
   }) {
     return _then(
       _$MessageImpl(
@@ -198,6 +207,10 @@ class __$$MessageImplCopyWithImpl<$Res>
             ? _value.commentCount
             : commentCount // ignore: cast_nullable_to_non_nullable
                   as int,
+        mentions: null == mentions
+            ? _value._mentions
+            : mentions // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
       ),
     );
   }
@@ -215,7 +228,9 @@ class _$MessageImpl implements _Message {
     @TimestampConverter() required this.timestamp,
     final List<String> likes = const [],
     this.commentCount = 0,
-  }) : _likes = likes;
+    final List<String> mentions = const [],
+  }) : _likes = likes,
+       _mentions = mentions;
 
   factory _$MessageImpl.fromJson(Map<String, dynamic> json) =>
       _$$MessageImplFromJson(json);
@@ -245,10 +260,18 @@ class _$MessageImpl implements _Message {
   @override
   @JsonKey()
   final int commentCount;
+  final List<String> _mentions;
+  @override
+  @JsonKey()
+  List<String> get mentions {
+    if (_mentions is EqualUnmodifiableListView) return _mentions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mentions);
+  }
 
   @override
   String toString() {
-    return 'Message(id: $id, groupId: $groupId, userId: $userId, content: $content, imageUrl: $imageUrl, timestamp: $timestamp, likes: $likes, commentCount: $commentCount)';
+    return 'Message(id: $id, groupId: $groupId, userId: $userId, content: $content, imageUrl: $imageUrl, timestamp: $timestamp, likes: $likes, commentCount: $commentCount, mentions: $mentions)';
   }
 
   @override
@@ -266,7 +289,8 @@ class _$MessageImpl implements _Message {
                 other.timestamp == timestamp) &&
             const DeepCollectionEquality().equals(other._likes, _likes) &&
             (identical(other.commentCount, commentCount) ||
-                other.commentCount == commentCount));
+                other.commentCount == commentCount) &&
+            const DeepCollectionEquality().equals(other._mentions, _mentions));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -281,6 +305,7 @@ class _$MessageImpl implements _Message {
     timestamp,
     const DeepCollectionEquality().hash(_likes),
     commentCount,
+    const DeepCollectionEquality().hash(_mentions),
   );
 
   /// Create a copy of Message
@@ -307,6 +332,7 @@ abstract class _Message implements Message {
     @TimestampConverter() required final DateTime timestamp,
     final List<String> likes,
     final int commentCount,
+    final List<String> mentions,
   }) = _$MessageImpl;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$MessageImpl.fromJson;
@@ -328,6 +354,8 @@ abstract class _Message implements Message {
   List<String> get likes;
   @override
   int get commentCount;
+  @override
+  List<String> get mentions;
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.
@@ -350,6 +378,7 @@ mixin _$Comment {
   String? get imageUrl => throw _privateConstructorUsedError;
   @TimestampConverter()
   DateTime get timestamp => throw _privateConstructorUsedError;
+  List<String> get mentions => throw _privateConstructorUsedError;
 
   /// Serializes this Comment to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -372,6 +401,7 @@ abstract class $CommentCopyWith<$Res> {
     String content,
     String? imageUrl,
     @TimestampConverter() DateTime timestamp,
+    List<String> mentions,
   });
 }
 
@@ -396,6 +426,7 @@ class _$CommentCopyWithImpl<$Res, $Val extends Comment>
     Object? content = null,
     Object? imageUrl = freezed,
     Object? timestamp = null,
+    Object? mentions = null,
   }) {
     return _then(
       _value.copyWith(
@@ -423,6 +454,10 @@ class _$CommentCopyWithImpl<$Res, $Val extends Comment>
                 ? _value.timestamp
                 : timestamp // ignore: cast_nullable_to_non_nullable
                       as DateTime,
+            mentions: null == mentions
+                ? _value.mentions
+                : mentions // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
           )
           as $Val,
     );
@@ -444,6 +479,7 @@ abstract class _$$CommentImplCopyWith<$Res> implements $CommentCopyWith<$Res> {
     String content,
     String? imageUrl,
     @TimestampConverter() DateTime timestamp,
+    List<String> mentions,
   });
 }
 
@@ -467,6 +503,7 @@ class __$$CommentImplCopyWithImpl<$Res>
     Object? content = null,
     Object? imageUrl = freezed,
     Object? timestamp = null,
+    Object? mentions = null,
   }) {
     return _then(
       _$CommentImpl(
@@ -494,6 +531,10 @@ class __$$CommentImplCopyWithImpl<$Res>
             ? _value.timestamp
             : timestamp // ignore: cast_nullable_to_non_nullable
                   as DateTime,
+        mentions: null == mentions
+            ? _value._mentions
+            : mentions // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
       ),
     );
   }
@@ -509,7 +550,8 @@ class _$CommentImpl implements _Comment {
     required this.content,
     this.imageUrl,
     @TimestampConverter() required this.timestamp,
-  });
+    final List<String> mentions = const [],
+  }) : _mentions = mentions;
 
   factory _$CommentImpl.fromJson(Map<String, dynamic> json) =>
       _$$CommentImplFromJson(json);
@@ -527,10 +569,18 @@ class _$CommentImpl implements _Comment {
   @override
   @TimestampConverter()
   final DateTime timestamp;
+  final List<String> _mentions;
+  @override
+  @JsonKey()
+  List<String> get mentions {
+    if (_mentions is EqualUnmodifiableListView) return _mentions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mentions);
+  }
 
   @override
   String toString() {
-    return 'Comment(id: $id, messageId: $messageId, userId: $userId, content: $content, imageUrl: $imageUrl, timestamp: $timestamp)';
+    return 'Comment(id: $id, messageId: $messageId, userId: $userId, content: $content, imageUrl: $imageUrl, timestamp: $timestamp, mentions: $mentions)';
   }
 
   @override
@@ -546,7 +596,8 @@ class _$CommentImpl implements _Comment {
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.timestamp, timestamp) ||
-                other.timestamp == timestamp));
+                other.timestamp == timestamp) &&
+            const DeepCollectionEquality().equals(other._mentions, _mentions));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -559,6 +610,7 @@ class _$CommentImpl implements _Comment {
     content,
     imageUrl,
     timestamp,
+    const DeepCollectionEquality().hash(_mentions),
   );
 
   /// Create a copy of Comment
@@ -583,6 +635,7 @@ abstract class _Comment implements Comment {
     required final String content,
     final String? imageUrl,
     @TimestampConverter() required final DateTime timestamp,
+    final List<String> mentions,
   }) = _$CommentImpl;
 
   factory _Comment.fromJson(Map<String, dynamic> json) = _$CommentImpl.fromJson;
@@ -600,6 +653,8 @@ abstract class _Comment implements Comment {
   @override
   @TimestampConverter()
   DateTime get timestamp;
+  @override
+  List<String> get mentions;
 
   /// Create a copy of Comment
   /// with the given fields replaced by the non-null parameter values.

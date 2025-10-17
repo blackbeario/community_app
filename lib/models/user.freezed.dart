@@ -33,6 +33,9 @@ mixin _$User {
   DateTime get createdAt => throw _privateConstructorUsedError;
   List<String> get groups => throw _privateConstructorUsedError;
   bool get isAdmin => throw _privateConstructorUsedError;
+  String? get fcmToken => throw _privateConstructorUsedError;
+  @TimestampConverter()
+  DateTime? get fcmTokenUpdatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -60,6 +63,8 @@ abstract class $UserCopyWith<$Res> {
     @TimestampConverter() DateTime createdAt,
     List<String> groups,
     bool isAdmin,
+    String? fcmToken,
+    @TimestampConverter() DateTime? fcmTokenUpdatedAt,
   });
 }
 
@@ -89,6 +94,8 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? createdAt = null,
     Object? groups = null,
     Object? isAdmin = null,
+    Object? fcmToken = freezed,
+    Object? fcmTokenUpdatedAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -136,6 +143,14 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
                 ? _value.isAdmin
                 : isAdmin // ignore: cast_nullable_to_non_nullable
                       as bool,
+            fcmToken: freezed == fcmToken
+                ? _value.fcmToken
+                : fcmToken // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            fcmTokenUpdatedAt: freezed == fcmTokenUpdatedAt
+                ? _value.fcmTokenUpdatedAt
+                : fcmTokenUpdatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -162,6 +177,8 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
     @TimestampConverter() DateTime createdAt,
     List<String> groups,
     bool isAdmin,
+    String? fcmToken,
+    @TimestampConverter() DateTime? fcmTokenUpdatedAt,
   });
 }
 
@@ -188,6 +205,8 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? groups = null,
     Object? isAdmin = null,
+    Object? fcmToken = freezed,
+    Object? fcmTokenUpdatedAt = freezed,
   }) {
     return _then(
       _$UserImpl(
@@ -235,6 +254,14 @@ class __$$UserImplCopyWithImpl<$Res>
             ? _value.isAdmin
             : isAdmin // ignore: cast_nullable_to_non_nullable
                   as bool,
+        fcmToken: freezed == fcmToken
+            ? _value.fcmToken
+            : fcmToken // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        fcmTokenUpdatedAt: freezed == fcmTokenUpdatedAt
+            ? _value.fcmTokenUpdatedAt
+            : fcmTokenUpdatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -255,6 +282,8 @@ class _$UserImpl implements _User {
     @TimestampConverter() required this.createdAt,
     final List<String> groups = const [],
     this.isAdmin = false,
+    this.fcmToken,
+    @TimestampConverter() this.fcmTokenUpdatedAt,
   }) : _groups = groups;
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
@@ -291,10 +320,15 @@ class _$UserImpl implements _User {
   @override
   @JsonKey()
   final bool isAdmin;
+  @override
+  final String? fcmToken;
+  @override
+  @TimestampConverter()
+  final DateTime? fcmTokenUpdatedAt;
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, email: $email, photoUrl: $photoUrl, coverPhotoUrl: $coverPhotoUrl, bio: $bio, phoneNumber: $phoneNumber, unitNumber: $unitNumber, createdAt: $createdAt, groups: $groups, isAdmin: $isAdmin)';
+    return 'User(id: $id, name: $name, email: $email, photoUrl: $photoUrl, coverPhotoUrl: $coverPhotoUrl, bio: $bio, phoneNumber: $phoneNumber, unitNumber: $unitNumber, createdAt: $createdAt, groups: $groups, isAdmin: $isAdmin, fcmToken: $fcmToken, fcmTokenUpdatedAt: $fcmTokenUpdatedAt)';
   }
 
   @override
@@ -317,7 +351,11 @@ class _$UserImpl implements _User {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             const DeepCollectionEquality().equals(other._groups, _groups) &&
-            (identical(other.isAdmin, isAdmin) || other.isAdmin == isAdmin));
+            (identical(other.isAdmin, isAdmin) || other.isAdmin == isAdmin) &&
+            (identical(other.fcmToken, fcmToken) ||
+                other.fcmToken == fcmToken) &&
+            (identical(other.fcmTokenUpdatedAt, fcmTokenUpdatedAt) ||
+                other.fcmTokenUpdatedAt == fcmTokenUpdatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -335,6 +373,8 @@ class _$UserImpl implements _User {
     createdAt,
     const DeepCollectionEquality().hash(_groups),
     isAdmin,
+    fcmToken,
+    fcmTokenUpdatedAt,
   );
 
   /// Create a copy of User
@@ -364,6 +404,8 @@ abstract class _User implements User {
     @TimestampConverter() required final DateTime createdAt,
     final List<String> groups,
     final bool isAdmin,
+    final String? fcmToken,
+    @TimestampConverter() final DateTime? fcmTokenUpdatedAt,
   }) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
@@ -391,6 +433,11 @@ abstract class _User implements User {
   List<String> get groups;
   @override
   bool get isAdmin;
+  @override
+  String? get fcmToken;
+  @override
+  @TimestampConverter()
+  DateTime? get fcmTokenUpdatedAt;
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.

@@ -19,7 +19,9 @@
       "Bash(firebase deploy:*)",
       "Bash(firebase use:*)",
       "Bash([ -d \"ios\" ])",
-      "Bash([ -d \"android\" ])"
+      "Bash([ -d \"android\" ])",
+      "Bash(firebase functions:log:*)",
+      "Bash(open /Users/jfraz/Sites/community/ios/Runner.xcworkspace)"
     ],
     "deny": [],
     "ask": []

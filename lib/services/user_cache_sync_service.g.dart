@@ -28,7 +28,7 @@ final localUserCacheServiceProvider =
 // ignore: unused_element
 typedef LocalUserCacheServiceRef =
     AutoDisposeProviderRef<LocalUserCacheService>;
-String _$allCachedUsersHash() => r'069bee160ed203b52c7d9d750f03ff8a43907846';
+String _$allCachedUsersHash() => r'f2406c04a46a9d672c59d2a7b9926e4122afef48';
 
 /// Provider to get all cached users (for mentions)
 ///
@@ -47,7 +47,7 @@ final allCachedUsersProvider = AutoDisposeFutureProvider<List<User>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AllCachedUsersRef = AutoDisposeFutureProviderRef<List<User>>;
-String _$userCacheSyncHash() => r'9564ecbff74a71addfbc9a27013ed47493eeb057';
+String _$userCacheSyncHash() => r'6dfad039e9ea2def7ecfe92cc90b5b46282565a7';
 
 /// Provider for syncing users from Firestore to local cache
 ///

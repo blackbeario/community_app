@@ -34,7 +34,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   final GlobalKey<FlutterMentionsState> _mentionsKey = GlobalKey<FlutterMentionsState>();
   File? _selectedImage;
   bool _isSubmitting = false;
-  List<String> _mentionedUserIds = [];
+  final List<String> _mentionedUserIds = [];
 
   @override
   void initState() {
@@ -89,6 +89,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
             userId: currentUser.id,
             content: content,
             imageFile: _selectedImage,
+            mentions: _mentionedUserIds,
           );
 
       // Clear the mentions input

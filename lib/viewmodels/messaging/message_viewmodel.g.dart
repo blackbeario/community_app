@@ -560,7 +560,7 @@ class _MessageStreamProviderElement
   String get messageId => (origin as MessageStreamProvider).messageId;
 }
 
-String _$messageViewModelHash() => r'86240117da4260e904b450470e66f13772486432';
+String _$messageViewModelHash() => r'bb4362154000fdd580bda6c86f74477341371469';
 
 /// ViewModel for message actions (posting, liking, commenting)
 ///
