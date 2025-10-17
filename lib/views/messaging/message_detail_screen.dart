@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
@@ -7,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/message.dart';
 import '../../models/user.dart';
 import '../../services/image_picker_service.dart';
+import '../../services/user_cache_sync_service.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/messaging/message_viewmodel.dart';
 import '../../widgets/message_card.dart';
@@ -29,16 +31,15 @@ class MessageDetailScreen extends ConsumerStatefulWidget {
 class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _commentFocusNode = FocusNode();
+  final GlobalKey<FlutterMentionsState> _mentionsKey = GlobalKey<FlutterMentionsState>();
   File? _selectedImage;
   bool _isSubmitting = false;
+  final List<String> _mentionedUserIds = [];
 
   @override
   void initState() {
     super.initState();
-    // Listen to text changes to rebuild the send button state
-    _commentController.addListener(() {
-      setState(() {});
-    });
+    // No longer need listener since validation happens in _submitComment
   }
 
   @override
@@ -76,7 +77,8 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
     final currentUser = ref.read(currentAppUserProvider).value;
     if (currentUser == null) return;
 
-    final content = _commentController.text.trim();
+    // Get content from FlutterMentions (use text for display, markupText has IDs)
+    final content = _mentionsKey.currentState?.controller?.text.trim() ?? '';
     if (content.isEmpty && _selectedImage == null) return;
 
     setState(() => _isSubmitting = true);
@@ -87,10 +89,15 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
             userId: currentUser.id,
             content: content,
             imageFile: _selectedImage,
+            mentions: _mentionedUserIds,
           );
 
-      _commentController.clear();
-      setState(() => _selectedImage = null);
+      // Clear the mentions input
+      _mentionsKey.currentState?.controller?.clear();
+      setState(() {
+        _selectedImage = null;
+        _mentionedUserIds.clear();
+      });
       _commentFocusNode.unfocus();
     } catch (e) {
       if (mounted) {
@@ -121,129 +128,196 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
       ),
       body: Column(
         children: [
-          // Message display - use live message data if available
-          messageAsync.when(
-            data: (liveMessage) => MessageCard(
-              message: liveMessage ?? widget.message,
-              messageAuthor: widget.messageAuthor,
-              onTap: null, // Disable tap since we're already on detail screen
-            ),
-            loading: () => MessageCard(
-              message: widget.message,
-              messageAuthor: widget.messageAuthor,
-              onTap: null,
-            ),
-            error: (_, __) => MessageCard(
-              message: widget.message,
-              messageAuthor: widget.messageAuthor,
-              onTap: null,
-            ),
-          ),
-
-          // Divider
-          const Divider(height: 1, thickness: 1),
-
-          // Comments header
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Text(
-                  'Comments',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                messageAsync.when(
-                  data: (liveMessage) => Text(
-                    '(${liveMessage?.commentCount ?? widget.message.commentCount})',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  loading: () => Text(
-                    '(${widget.message.commentCount})',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  error: (_, __) => Text(
-                    '(${widget.message.commentCount})',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Comments list
+          // Combined scrollable area with message and comments
           Expanded(
             child: commentsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Text('Error loading comments: $error'),
+              loading: () => SingleChildScrollView(
+                child: Column(
+                  children: [
+                    messageAsync.when(
+                      data: (liveMessage) => MessageCard(
+                        message: liveMessage ?? widget.message,
+                        messageAuthor: widget.messageAuthor,
+                        onTap: null,
+                      ),
+                      loading: () => MessageCard(
+                        message: widget.message,
+                        messageAuthor: widget.messageAuthor,
+                        onTap: null,
+                      ),
+                      error: (_, __) => MessageCard(
+                        message: widget.message,
+                        messageAuthor: widget.messageAuthor,
+                        onTap: null,
+                      ),
+                    ),
+                    const Divider(height: 1, thickness: 1),
+                    const SizedBox(height: 16),
+                    const Center(child: CircularProgressIndicator()),
+                  ],
+                ),
+              ),
+              error: (error, stack) => SingleChildScrollView(
+                child: Column(
+                  children: [
+                    messageAsync.when(
+                      data: (liveMessage) => MessageCard(
+                        message: liveMessage ?? widget.message,
+                        messageAuthor: widget.messageAuthor,
+                        onTap: null,
+                      ),
+                      loading: () => MessageCard(
+                        message: widget.message,
+                        messageAuthor: widget.messageAuthor,
+                        onTap: null,
+                      ),
+                      error: (_, __) => MessageCard(
+                        message: widget.message,
+                        messageAuthor: widget.messageAuthor,
+                        onTap: null,
+                      ),
+                    ),
+                    const Divider(height: 1, thickness: 1),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text('Error loading comments: $error'),
+                    ),
+                  ],
+                ),
               ),
               data: (comments) {
-                if (comments.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.comment_outlined,
-                          size: 64,
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                return CustomScrollView(
+                  slivers: [
+                    // Message at the top
+                    SliverToBoxAdapter(
+                      child: messageAsync.when(
+                        data: (liveMessage) => MessageCard(
+                          message: liveMessage ?? widget.message,
+                          messageAuthor: widget.messageAuthor,
+                          onTap: null,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No comments yet',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        loading: () => MessageCard(
+                          message: widget.message,
+                          messageAuthor: widget.messageAuthor,
+                          onTap: null,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Be the first to comment!',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        error: (_, __) => MessageCard(
+                          message: widget.message,
+                          messageAuthor: widget.messageAuthor,
+                          onTap: null,
                         ),
-                      ],
+                      ),
                     ),
-                  );
-                }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    final commentUserAsync = ref.watch(messageUserProvider(comment.userId));
+                    // Divider
+                    const SliverToBoxAdapter(
+                      child: Divider(height: 1, thickness: 1),
+                    ),
 
-                    return commentUserAsync.when(
-                      loading: () => const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Center(child: CircularProgressIndicator()),
+                    // Comments header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Comments',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            messageAsync.when(
+                              data: (liveMessage) => Text(
+                                '(${liveMessage?.commentCount ?? widget.message.commentCount})',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              loading: () => Text(
+                                '(${widget.message.commentCount})',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              error: (_, __) => Text(
+                                '(${widget.message.commentCount})',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      error: (error, stack) => Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('Error loading user: $error'),
+                    ),
+
+                    // Comments list or empty state
+                    if (comments.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.comment_outlined,
+                                size: 64,
+                                color: AppColors.textSecondary.withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No comments yet',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Be the first to comment!',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final comment = comments[index];
+                              final commentUserAsync = ref.watch(messageUserProvider(comment.userId));
+
+                              return commentUserAsync.when(
+                                loading: () => const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                                error: (error, stack) => Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text('Error loading user: $error'),
+                                ),
+                                data: (commentUser) {
+                                  if (commentUser == null) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return CommentCard(
+                                    comment: comment,
+                                    commentAuthor: commentUser,
+                                  );
+                                },
+                              );
+                            },
+                            childCount: comments.length,
+                          ),
+                        ),
                       ),
-                      data: (commentUser) {
-                        if (commentUser == null) {
-                          return const SizedBox.shrink();
-                        }
-                        return CommentCard(
-                          comment: comment,
-                          commentAuthor: commentUser,
-                        );
-                      },
-                    );
-                  },
+                  ],
                 );
               },
             ),
@@ -318,14 +392,16 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                         ),
                         const SizedBox(width: 8),
 
-                        // Text input
+                        // Text input with mentions
                         Expanded(
-                          child: TextField(
-                            controller: _commentController,
-                            focusNode: _commentFocusNode,
+                          child: FlutterMentions(
+                            key: _mentionsKey,
+                            suggestionPosition: SuggestionPosition.Top,
+                            maxLines: 5,
+                            minLines: 1,
                             enabled: !_isSubmitting,
                             decoration: InputDecoration(
-                              hintText: 'Add a comment...',
+                              hintText: 'Add a comment... Type @ to mention',
                               hintStyle: AppTextStyles.inputHint,
                               filled: true,
                               fillColor: AppColors.background,
@@ -338,8 +414,60 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                                 vertical: 10,
                               ),
                             ),
-                            maxLines: null,
-                            textCapitalization: TextCapitalization.sentences,
+                            style: AppTextStyles.bodyMedium,
+                            mentions: [
+                              Mention(
+                                trigger: '@',
+                                style: TextStyle(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                data: ref.watch(allCachedUsersProvider).when(
+                                  data: (users) => users.map((user) => {
+                                    'id': user.id,
+                                    'display': user.name,
+                                    'photo': user.photoUrl ?? '',
+                                  }).toList(),
+                                  loading: () => [],
+                                  error: (_, __) => [],
+                                ),
+                                matchAll: true,
+                                suggestionBuilder: (data) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 16,
+                                          backgroundImage: data['photo'] != null && data['photo'].toString().isNotEmpty
+                                            ? NetworkImage(data['photo'] as String)
+                                            : null,
+                                          child: data['photo'] == null || data['photo'].toString().isEmpty
+                                            ? Text(
+                                                (data['display'] as String)[0].toUpperCase(),
+                                                style: const TextStyle(fontSize: 14),
+                                              )
+                                            : null,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          data['display'] as String,
+                                          style: AppTextStyles.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                            onMentionAdd: (mention) {
+                              final userId = mention['id'] as String;
+                              if (!_mentionedUserIds.contains(userId)) {
+                                setState(() {
+                                  _mentionedUserIds.add(userId);
+                                });
+                              }
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -359,10 +487,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                               )
                             : IconButton(
                                 icon: const Icon(Icons.send, color: AppColors.accent),
-                                onPressed: 
-                                  (_commentController.text.trim().isEmpty && _selectedImage == null)
-                                    ? null
-                                    : _submitComment,
+                                onPressed: _submitComment,
                               ),
                       ],
                     ),

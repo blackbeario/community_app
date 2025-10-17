@@ -55,14 +55,17 @@ class FeaturedGroupCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          group.name,
-                          style: AppTextStyles.h3.copyWith(
-                            color: AppColors.textPrimary,
+                        Expanded(
+                          child: Text(
+                            group.name,
+                            style: AppTextStyles.h3.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Spacer(),
-                        if (messageCount != null && messageCount! > 0)
+                        if (messageCount != null && messageCount! > 0) ...[
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
@@ -77,6 +80,7 @@ class FeaturedGroupCard extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 4),

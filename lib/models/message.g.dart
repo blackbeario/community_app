@@ -18,6 +18,11 @@ _$MessageImpl _$$MessageImplFromJson(Map<String, dynamic> json) =>
           (json['likes'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
       commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      mentions:
+          (json['mentions'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
@@ -30,6 +35,7 @@ Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
       'timestamp': const TimestampConverter().toJson(instance.timestamp),
       'likes': instance.likes,
       'commentCount': instance.commentCount,
+      'mentions': instance.mentions,
     };
 
 _$CommentImpl _$$CommentImplFromJson(Map<String, dynamic> json) =>
@@ -40,6 +46,11 @@ _$CommentImpl _$$CommentImplFromJson(Map<String, dynamic> json) =>
       content: json['content'] as String,
       imageUrl: json['imageUrl'] as String?,
       timestamp: const TimestampConverter().fromJson(json['timestamp']),
+      mentions:
+          (json['mentions'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$CommentImplToJson(_$CommentImpl instance) =>
@@ -50,4 +61,5 @@ Map<String, dynamic> _$$CommentImplToJson(_$CommentImpl instance) =>
       'content': instance.content,
       'imageUrl': instance.imageUrl,
       'timestamp': const TimestampConverter().toJson(instance.timestamp),
+      'mentions': instance.mentions,
     };

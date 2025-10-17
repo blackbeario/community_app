@@ -18,6 +18,8 @@ class User with _$User {
     @TimestampConverter() required DateTime createdAt,
     @Default([]) List<String> groups,
     @Default(false) bool isAdmin,
+    String? fcmToken,
+    @TimestampConverter() DateTime? fcmTokenUpdatedAt,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
