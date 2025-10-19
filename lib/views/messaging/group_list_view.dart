@@ -12,7 +12,7 @@ class GroupListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groupsAsync = ref.watch(selectableGroupsProvider);
+    final groupsAsync = ref.watch(userVisibleGroupsProvider);
 
     return Container(
       color: AppColors.background,

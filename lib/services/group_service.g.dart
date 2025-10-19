@@ -228,5 +228,25 @@ final selectableGroupsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SelectableGroupsRef = AutoDisposeStreamProviderRef<List<Group>>;
+String _$userVisibleGroupsHash() => r'54fdf94524fa481791f1a1d2e396221e05fcc523';
+
+/// Provider to get user-visible groups for messaging (excludes 'all' and 'announcements' for non-admins)
+///
+/// Copied from [userVisibleGroups].
+@ProviderFor(userVisibleGroups)
+final userVisibleGroupsProvider =
+    AutoDisposeStreamProvider<List<Group>>.internal(
+      userVisibleGroups,
+      name: r'userVisibleGroupsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$userVisibleGroupsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef UserVisibleGroupsRef = AutoDisposeStreamProviderRef<List<Group>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
