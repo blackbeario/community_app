@@ -11,6 +11,7 @@ import '../../models/message.dart';
 import '../../services/auth_service.dart';
 import '../../services/message_service.dart';
 import '../../services/user_cache_sync_service.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
 
 /// Screen for creating a new message in a group
 class CreateMessageScreen extends ConsumerStatefulWidget {
@@ -139,6 +140,20 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
         ),
       );
       return;
+    }
+
+    // Check if posting to announcements group - only admins allowed
+    if (widget.groupId == 'announcements') {
+      final currentAppUser = ref.read(currentAppUserProvider).valueOrNull;
+      if (currentAppUser == null || !currentAppUser.isAdmin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Only administrators can post announcements'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
     }
 
     setState(() {

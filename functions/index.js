@@ -1,4 +1,4 @@
-const {onRequest} = require("firebase-functions/v2/https");
+const {onRequest, onCall, HttpsError} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
@@ -184,6 +184,123 @@ exports.onCommentCreated = onDocumentCreated("comments/{commentId}", async (even
 
   await Promise.all(notifications);
   return null;
+});
+
+/**
+ * Callable function to set admin custom claim
+ * Can only be called by existing admins
+ */
+exports.setAdminClaim = onCall(async (request) => {
+  const {userId, isAdmin} = request.data;
+
+  // Check if the caller is authenticated
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "User must be authenticated");
+  }
+
+  // Get caller's custom claims
+  const caller = await admin.auth().getUser(request.auth.uid);
+  const callerClaims = caller.customClaims || {};
+
+  // Only existing admins can modify admin status
+  if (!callerClaims.admin) {
+    throw new HttpsError(
+        "permission-denied",
+        "Only administrators can set admin claims",
+    );
+  }
+
+  // Prevent users from removing their own admin status
+  if (request.auth.uid === userId && !isAdmin) {
+    throw new HttpsError(
+        "permission-denied",
+        "You cannot remove your own admin status",
+    );
+  }
+
+  try {
+    // Set the custom claim
+    await admin.auth().setCustomUserClaims(userId, {admin: isAdmin});
+
+    // Update the user's isAdmin field in Firestore
+    await admin.firestore()
+        .collection("users")
+        .doc(userId)
+        .update({isAdmin: isAdmin});
+
+    logger.log(`Admin claim ${isAdmin ? "set" : "removed"} for user ${userId} by ${request.auth.uid}`);
+
+    return {success: true, message: `Admin status ${isAdmin ? "granted" : "revoked"} successfully`};
+  } catch (error) {
+    logger.error("Error setting admin claim:", error);
+    throw new HttpsError("internal", "Failed to set admin claim");
+  }
+});
+
+/**
+ * Cloud Function triggered when a message is created in the announcements group
+ * Sends push notification to all users subscribed to announcements topic
+ */
+exports.onAnnouncementCreated = onDocumentCreated("messages/{messageId}", async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) {
+    logger.log("No data associated with the event");
+    return;
+  }
+
+  const message = snapshot.data();
+  const messageId = event.params.messageId;
+
+  // Only process messages in the announcements group
+  if (message.groupId !== "announcements") {
+    return null;
+  }
+
+  logger.log("New announcement created:", messageId);
+
+  try {
+    // Verify the sender is an admin
+    const authorDoc = await admin.firestore()
+        .collection("users")
+        .doc(message.userId)
+        .get();
+
+    if (!authorDoc.exists) {
+      logger.error(`Author not found: ${message.userId}`);
+      return null;
+    }
+
+    const author = authorDoc.data();
+
+    if (!author.isAdmin) {
+      logger.error(`Non-admin user ${message.userId} attempted to send announcement`);
+      return null;
+    }
+
+    // Send notification to the announcements topic
+    const payload = {
+      notification: {
+        title: `Announcement from ${author.name}`,
+        body: truncate(message.content, 100),
+      },
+      data: {
+        type: "announcement",
+        messageId: messageId,
+        groupId: "announcements",
+        fromUserId: message.userId,
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+      },
+      topic: "announcements",
+    };
+
+    await admin.messaging().send(payload);
+    logger.log("Announcement notification sent to topic: announcements");
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to send announcement notification:", error);
+    return null;
+  }
 });
 
 /**

@@ -1,3 +1,4 @@
+import 'package:community/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class ProfileActionButton extends StatelessWidget {
@@ -15,7 +16,7 @@ class ProfileActionButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[200],
+        backgroundColor: AppColors.surface,
         foregroundColor: Colors.black87,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),

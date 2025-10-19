@@ -17,6 +17,10 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
+    function hasAdminClaim() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
     // Users collection
     match /users/{userId} {
       // Anyone authenticated can read user profiles
@@ -28,6 +32,12 @@ service cloud.firestore {
 
       // Only admins can delete users
       allow delete: if isAdmin();
+
+      // Notification preferences subcollection
+      match /settings/{documentId} {
+        // Users can read and write their own notification preferences
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
     }
 
     // Groups collection
@@ -45,8 +55,11 @@ service cloud.firestore {
       allow read: if isAuthenticated();
 
       // Authenticated users can create messages
+      // Special rule: only admins can post to announcements group
       allow create: if isAuthenticated() &&
-                       request.resource.data.userId == request.auth.uid;
+                       request.resource.data.userId == request.auth.uid &&
+                       (request.resource.data.groupId != 'announcements' ||
+                        (hasAdminClaim() && isAdmin()));
 
       // Users can update their own messages (for likes, etc.)
       allow update: if isAuthenticated();

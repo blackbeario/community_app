@@ -21,7 +21,8 @@
       "Bash([ -d \"ios\" ])",
       "Bash([ -d \"android\" ])",
       "Bash(firebase functions:log:*)",
-      "Bash(open /Users/jfraz/Sites/community/ios/Runner.xcworkspace)"
+      "Bash(open /Users/jfraz/Sites/community/ios/Runner.xcworkspace)",
+      "Bash(flutter build:*)"
     ],
     "deny": [],
     "ask": []

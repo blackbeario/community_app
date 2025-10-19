@@ -1,3 +1,4 @@
+import 'package:community/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,6 +11,7 @@ import 'widgets/profile_tab.dart';
 import 'widgets/help_category_card.dart';
 import 'widgets/editable_unit_number.dart';
 import 'widgets/editable_bio.dart';
+import 'user_permissions_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -104,7 +106,8 @@ class ProfileScreen extends ConsumerWidget {
                         // Unit Number
                         EditableUnitNumber(
                           unitNumber: user.unitNumber,
-                          onSave: (unitNumber) => ref.read(profileViewModelProvider.notifier).updateUnitNumber(user.id, unitNumber),
+                          onSave: (unitNumber) =>
+                              ref.read(profileViewModelProvider.notifier).updateUnitNumber(user.id, unitNumber),
                         ),
 
                         // Bio
@@ -159,7 +162,7 @@ class ProfileScreen extends ConsumerWidget {
                               Expanded(
                                 child: ProfileTab(
                                   label: 'Groups',
-                                  isSelected: false,
+                                  isSelected: true,
                                   onPressed: () {
                                     // TODO: Show groups
                                   },
@@ -172,28 +175,16 @@ class ProfileScreen extends ConsumerWidget {
                         const SizedBox(height: 24),
 
                         // Help Categories
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: HelpCategoryCard(
-                                  label: 'Groceries',
-                                  onPressed: () {
-                                    // TODO: Navigate to groceries
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: HelpCategoryCard(
-                                  label: 'Sport',
-                                  onPressed: () {
-                                    // TODO: Navigate to sport
-                                  },
-                                ),
-                              ),
-                            ],
+                        Card(
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          color: AppColors.surface,
+                          child: ListTile(
+                            title: Text('Notification Settings'),
+                            trailing: Icon(Icons.notifications_outlined),
+                            onTap: () => Navigator.of(
+                                  context,
+                                ).push(MaterialPageRoute(builder: (context) => const UserPermissionsScreen())),  
                           ),
                         ),
 

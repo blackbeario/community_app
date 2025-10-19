@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/config/firebase_providers.dart';
 import '../models/group.dart';
+import 'user_service.dart';
+import 'auth_service.dart';
 
 part 'group_service.g.dart';
 
@@ -158,4 +160,37 @@ Stream<List<Group>> selectableGroups(Ref ref) {
   return ref.watch(groupServiceProvider).getAllGroups().map((groups) {
     return groups.where((group) => group.id != 'all').toList();
   });
+}
+
+/// Provider to get user-visible groups for messaging (excludes 'all' and 'announcements' for non-admins)
+@riverpod
+Stream<List<Group>> userVisibleGroups(Ref ref) async* {
+  await for (final groups in ref.watch(groupServiceProvider).getAllGroups()) {
+    // Filter out 'all' group
+    var filtered = groups.where((group) => group.id != 'all').toList();
+
+    // Import the user service to check admin status
+    final userService = ref.watch(userServiceProvider);
+    final authService = ref.watch(authServiceProvider);
+    final authUser = authService.currentUser;
+
+    if (authUser != null) {
+      try {
+        final appUser = await userService.getUser(authUser.uid);
+
+        // If not admin, also filter out announcements
+        if (appUser != null && !appUser.isAdmin) {
+          filtered = filtered.where((group) => group.id != 'announcements').toList();
+        }
+      } catch (e) {
+        // If error getting user, filter out announcements to be safe
+        filtered = filtered.where((group) => group.id != 'announcements').toList();
+      }
+    } else {
+      // If not authenticated, filter out announcements
+      filtered = filtered.where((group) => group.id != 'announcements').toList();
+    }
+
+    yield filtered;
+  }
 }
