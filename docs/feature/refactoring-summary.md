@@ -85,7 +85,7 @@ GroupInitializer     → Orchestrates seeding
 ```dart
 // Force re-seed (overwrites existing)
 final initializer = GroupInitializer(groupService);
-await initializer.forceInitialize();
+await initializer.seedGroups();
 ```
 
 ### For Custom Deployments

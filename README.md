@@ -1,6 +1,6 @@
 # Community App
 
-The Community mobile app is a neighborhood-driven solution for residents to interact with other members, local ammenities, engage with advertiser services, explore events, make reservations and so much more.
+The Community mobile app is a neighborhood-driven solution for residents to interact with other members and administrators, reserve local ammenities, engage with advertiser services, explore events and so much more.
 
 ## Features
 

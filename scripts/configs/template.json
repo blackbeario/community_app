@@ -1,0 +1,53 @@
+{
+  "name": "Community Name",
+  "projectId": "community-example",
+  "iosBundleId": "io.vibesoftware.community.example",
+  "androidPackageName": "io.vibesoftware.community.example",
+  "groups": [
+    {
+      "id": "announcements",
+      "name": "Announcements",
+      "description": "Important community announcements from management",
+      "icon": "📢",
+      "memberCount": 0
+    },
+    {
+      "id": "events",
+      "name": "Events",
+      "description": "Community events, gatherings, and activities",
+      "icon": "🎉",
+      "memberCount": 0
+    },
+    {
+      "id": "general",
+      "name": "General Discussion",
+      "description": "General community discussions and conversations",
+      "icon": "💬",
+      "memberCount": 0
+    },
+    {
+      "id": "maintenance",
+      "name": "Maintenance & Repairs",
+      "description": "Maintenance requests and facility updates",
+      "icon": "🔧",
+      "memberCount": 0
+    },
+    {
+      "id": "amenities",
+      "name": "Amenities",
+      "description": "Pool, clubhouse, and amenity reservations",
+      "icon": "🏊",
+      "memberCount": 0
+    },
+    {
+      "id": "marketplace",
+      "name": "Marketplace",
+      "description": "Buy, sell, and trade within the community",
+      "icon": "🛒",
+      "memberCount": 0
+    }
+  ],
+  "admins": [
+    "admin@example.com"
+  ]
+}

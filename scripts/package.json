@@ -1,0 +1,15 @@
+{
+  "name": "community-deployment-scripts",
+  "version": "1.0.0",
+  "description": "Deployment automation scripts for community Firebase projects",
+  "private": true,
+  "scripts": {
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
