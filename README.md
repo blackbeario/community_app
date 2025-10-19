@@ -5,8 +5,21 @@ The Community mobile app is a neighborhood-driven solution for residents to inte
 ## Features
 
 * Group Messaging
-* Personal Messaging
+* Message Filtering
 * FCM Push Notifications
+* Group Notification Preferences
+* Scalable Cached Message searching
+* Cached User Mentions
+* User Profile
+* File Uploads
+* Inline Editing
+* Offline-first Capability
+
+
+## Planned Features
+
+* Thread Notifications
+* Direct Messaging
 * Search Advertiser Services
 * Reservations for Golf, Pickleball, Pools, Dinner, etc
 * Custom Event Creation & RSVP
@@ -14,9 +27,7 @@ The Community mobile app is a neighborhood-driven solution for residents to inte
 * Interactive Community Maps
 * Geolocation
 * AI-Agent FAQ
-* SQLite FTS5 Caching
-* Scalable pre-cached searching
-* Cached User Mentions
+
 
 ## Architecture
 
@@ -27,4 +38,4 @@ The Community mobile app is a neighborhood-driven solution for residents to inte
 * Cloud Functions
 * Riverpod
 * Freezed
-* SQLite FTS5
+* SQLite FTS5 Caching
