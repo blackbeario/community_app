@@ -8,10 +8,10 @@ import '../../viewmodels/profile/profile_viewmodel.dart';
 import 'widgets/default_cover_photo.dart';
 import 'widgets/profile_action_button.dart';
 import 'widgets/profile_tab.dart';
-import 'widgets/help_category_card.dart';
 import 'widgets/editable_unit_number.dart';
 import 'widgets/editable_bio.dart';
 import 'user_permissions_screen.dart';
+import '../admin/multi_project_admin_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -174,17 +174,32 @@ class ProfileScreen extends ConsumerWidget {
 
                         const SizedBox(height: 24),
 
-                        // Help Categories
+                        // Settings Cards
                         Card(
                           elevation: 1,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           color: AppColors.surface,
-                          child: ListTile(
-                            title: Text('Notification Settings'),
-                            trailing: Icon(Icons.notifications_outlined),
-                            onTap: () => Navigator.of(
-                                  context,
-                                ).push(MaterialPageRoute(builder: (context) => const UserPermissionsScreen())),  
+                          child: Column(
+                            children: [
+                              ListTile(
+                                title: const Text('Notification Settings'),
+                                trailing: const Icon(Icons.notifications_outlined),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (context) => const UserPermissionsScreen()),
+                                ),
+                              ),
+                              if (user.isAdmin) ...[
+                                const Divider(height: 1),
+                                ListTile(
+                                  title: const Text('Multi-Project Admin'),
+                                  subtitle: const Text('Manage multiple communities'),
+                                  trailing: const Icon(Icons.admin_panel_settings),
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (context) => const MultiProjectAdminScreen()),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
 

@@ -22,7 +22,6 @@ class MessageListScreen extends ConsumerStatefulWidget {
 
 class _MessageListScreenState extends ConsumerState<MessageListScreen> {
   bool _isSearching = false;
-  bool _hasPrefetched = false;
 
   @override
   void initState() {
@@ -35,9 +34,6 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
 
   /// Prefetch messages from all groups in the background for offline search
   Future<void> _prefetchMessagesInBackground() async {
-    if (_hasPrefetched) return;
-    _hasPrefetched = true;
-
     // Run in background without blocking UI
     final cacheSyncService = ref.read(cacheSyncServiceProvider);
     await cacheSyncService.prefetchAllGroups(messagesPerGroup: 50);

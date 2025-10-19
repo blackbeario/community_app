@@ -9,10 +9,8 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_router.dart';
 import 'core/config/firebase_providers.dart';
-import 'services/group_service.dart';
 import 'services/user_cache_sync_service.dart';
 import 'services/fcm_service.dart';
-import 'core/utils/group_initializer.dart';
 
 /// Background message handler - must be top-level function
 @pragma('vm:entry-point')
@@ -30,16 +28,6 @@ void main() async {
 
   // Register background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // Create a temporary ProviderContainer to initialize groups
-  final container = ProviderContainer();
-  final groupService = container.read(groupServiceProvider);
-  final initializer = GroupInitializer(groupService);
-
-  // Initialize groups if needed (one-time setup)
-  await initializer.initializeIfNeeded();
-
-  container.dispose();
 
   runApp(
     const ProviderScope(

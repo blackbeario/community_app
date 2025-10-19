@@ -152,10 +152,10 @@ To force re-seeding during development:
 ```dart
 final groupService = ref.read(groupServiceProvider);
 final initializer = GroupInitializer(groupService);
-await initializer.forceInitialize();
+await initializer.seedGroups();
 ```
 
-**⚠️ Warning:** `forceInitialize()` will overwrite existing groups with the same IDs.
+**⚠️ Warning:** `seedGroups()` will overwrite existing groups with the same IDs.
 
 ### Custom Seeding
 

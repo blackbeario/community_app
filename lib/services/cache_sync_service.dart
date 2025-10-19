@@ -14,17 +14,25 @@ class CacheSyncService {
   final MessageCacheService _cacheService;
   final GroupService _groupService;
 
-  CacheSyncService(
-    this._messageService,
-    this._cacheService,
-    this._groupService,
-  );
+  bool _hasPrefetched = false;
+  DateTime? _lastPrefetchTime;
+
+  CacheSyncService(this._messageService, this._cacheService, this._groupService);
 
   /// Prefetch and cache recent messages for all groups in the background
   /// This enables offline search across all groups without user navigation
-  Future<void> prefetchAllGroups({int messagesPerGroup = 50}) async {
+  /// Only runs once per app session unless forced
+  Future<void> prefetchAllGroups({int messagesPerGroup = 50, bool force = false}) async {
+    // Skip if already prefetched (unless forced)
+    if (_hasPrefetched && !force) {
+      debugPrint('Cache already prefetched. Skipping.');
+      return;
+    }
+
     try {
       debugPrint('Starting background cache prefetch...');
+      _hasPrefetched = true;
+      _lastPrefetchTime = DateTime.now();
 
       // Get all groups
       final groupsSnapshot = await _groupService.getAllGroups().first;
@@ -37,10 +45,7 @@ class CacheSyncService {
       // Fetch and cache messages for each group
       for (final group in groups) {
         try {
-          final messages = await _messageService.getMessagesPaginated(
-            groupId: group.id,
-            limit: messagesPerGroup,
-          );
+          final messages = await _messageService.getMessagesPaginated(groupId: group.id, limit: messagesPerGroup);
 
           if (messages.isNotEmpty) {
             await _cacheService.cacheMessages(messages);
@@ -62,6 +67,8 @@ class CacheSyncService {
   /// Clear entire cache
   Future<void> clearCache() async {
     await _cacheService.clearAllCache();
+    _hasPrefetched = false;
+    _lastPrefetchTime = null;
     debugPrint('Cache cleared');
   }
 
@@ -69,9 +76,15 @@ class CacheSyncService {
   Future<Map<String, int>> getCacheStats() async {
     return await _cacheService.getCacheStats();
   }
+
+  /// Check if cache has been prefetched
+  bool get hasPrefetched => _hasPrefetched;
+
+  /// Get last prefetch time
+  DateTime? get lastPrefetchTime => _lastPrefetchTime;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 CacheSyncService cacheSyncService(Ref ref) {
   return CacheSyncService(
     ref.watch(messageServiceProvider),

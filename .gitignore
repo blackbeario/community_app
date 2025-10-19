@@ -48,3 +48,10 @@ app.*.map.json
 /ios/Runner/GoogleService-Info.plist
 /android/app/google-services.json
 lib/firebase_options.dart
+
+# Scripts - sensitive configs and downloads
+scripts/configs/*.json
+!scripts/configs/template.json
+!scripts/configs/projects.json
+scripts/downloads/
+scripts/node_modules/
