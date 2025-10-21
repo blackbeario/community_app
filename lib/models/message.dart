@@ -53,6 +53,6 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
 
   @override
   dynamic toJson(DateTime dateTime) {
-    return Timestamp.fromDate(dateTime);
+    return dateTime.millisecondsSinceEpoch;
   }
 }

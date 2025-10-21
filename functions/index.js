@@ -2,6 +2,10 @@ const {onRequest, onCall, HttpsError} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
+const {defineSecret} = require("firebase-functions/params");
+
+// Define the Anthropic API key as a secret
+const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
 
 admin.initializeApp();
 
@@ -313,3 +317,132 @@ function truncate(str, length) {
   if (!str) return "";
   return str.length > length ? str.substring(0, length) + "..." : str;
 }
+
+/**
+ * Select an emoji based on keywords in name and description
+ * TEMPORARY fallback until Anthropic billing works
+ * @param {string} name - Group name
+ * @param {string} description - Group description
+ * @return {string} Selected emoji
+ */
+function selectEmojiByKeywords(name, description) {
+  const text = `${name} ${description}`.toLowerCase();
+
+  const keywords = [
+    {words: ["sport", "fitness", "gym", "workout", "exercise"], emoji: "🏋️"},
+    {words: ["golf", "golfing"], emoji: "⛳"},
+    {words: ["boat", "sailing", "yacht", "marina"], emoji: "⛵"},
+    {words: ["book", "reading", "library"], emoji: "📚"},
+    {words: ["food", "cooking", "recipe", "chef"], emoji: "👨‍🍳"},
+    {words: ["music", "band", "concert"], emoji: "🎵"},
+    {words: ["art", "painting", "creative"], emoji: "🎨"},
+    {words: ["tech", "coding", "programming", "developer"], emoji: "💻"},
+    {words: ["game", "gaming", "esports"], emoji: "🎮"},
+    {words: ["travel", "adventure", "explore"], emoji: "✈️"},
+    {words: ["photo", "photography", "camera"], emoji: "📷"},
+    {words: ["garden", "plant", "flower"], emoji: "🌱"},
+    {words: ["pet", "dog", "cat", "animal"], emoji: "🐾"},
+    {words: ["family", "parent", "kids", "children"], emoji: "👨‍👩‍👧‍👦"},
+    {words: ["business", "professional", "work"], emoji: "💼"},
+    {words: ["volunteer", "charity", "help"], emoji: "🤝"},
+    {words: ["education", "school", "learning"], emoji: "🎓"},
+    {words: ["health", "medical", "wellness"], emoji: "⚕️"},
+    {words: ["movie", "film", "cinema"], emoji: "🎬"},
+    {words: ["coffee", "cafe"], emoji: "☕"},
+    {words: ["staff", "team", "admin"], emoji: "👥"},
+  ];
+
+  // Find matching keyword
+  for (const {words, emoji} of keywords) {
+    if (words.some((word) => text.includes(word))) {
+      return emoji;
+    }
+  }
+
+  // Default emojis if no match
+  const defaults = ["📁", "💬", "🌟", "🎯", "🔔", "📌", "🎪", "🎭", "🎨", "🎯"];
+  return defaults[Math.floor(Math.random() * defaults.length)];
+}
+
+/**
+ * Callable function to generate an emoji for a group using Claude API
+ * Only callable by admin users
+ */
+exports.generateGroupEmoji = onCall({secrets: [anthropicApiKey]}, async (request) => {
+  const {name, description} = request.data;
+
+  // Check if the caller is authenticated
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "User must be authenticated");
+  }
+
+  // Get caller's info from Firestore
+  const callerDoc = await admin.firestore()
+      .collection("users")
+      .doc(request.auth.uid)
+      .get();
+
+  if (!callerDoc.exists) {
+    throw new HttpsError("not-found", "User not found");
+  }
+
+  const caller = callerDoc.data();
+
+  // Only admins can generate group emojis
+  if (!caller.isAdmin) {
+    throw new HttpsError(
+        "permission-denied",
+        "Only administrators can generate group emojis",
+    );
+  }
+
+  // Validate input
+  if (!name || !description) {
+    throw new HttpsError("invalid-argument", "Name and description are required");
+  }
+
+  try {
+    logger.log(`Generating emoji for group: ${name}`);
+
+    // TEMPORARY FALLBACK: Use keyword-based emoji selection
+    // TODO: Switch back to Claude API once billing is working
+    // const emoji = selectEmojiByKeywords(name, description);
+    // logger.log(`Generated emoji: ${emoji} for group: ${name}`);
+    // return {emoji: emoji};
+
+    // Call Anthropic API
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": anthropicApiKey.value(),
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-5-20250929",
+        max_tokens: 10,
+        messages: [{
+          role: "user",
+          content: `Suggest ONE emoji that best represents a group named "${name}" with description "${description}". Respond with ONLY the emoji character, nothing else.`,
+        }],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error("Anthropic API error:", errorText);
+      throw new HttpsError("internal", "Failed to generate emoji");
+    }
+
+    const data = await response.json();
+    logger.log("Full API response:", JSON.stringify(data)); // Add this to see the full response
+    const emoji = data.content[0].text.trim();
+
+    logger.log(`Generated emoji: ${emoji} for group: ${name}`);
+    return {emoji: emoji};
+
+  } catch (error) {
+    logger.error("Error generating emoji:", error);
+    throw new HttpsError("internal", "Failed to generate emoji");
+  }
+});

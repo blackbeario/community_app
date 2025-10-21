@@ -11,6 +11,7 @@ _$CommunityProjectImpl _$$CommunityProjectImplFromJson(
 ) => _$CommunityProjectImpl(
   name: json['name'] as String,
   projectId: json['projectId'] as String,
+  projectNumber: json['projectNumber'] as String?,
   status: json['status'] as String? ?? 'active',
   created: json['created'] == null
       ? null
@@ -22,6 +23,7 @@ Map<String, dynamic> _$$CommunityProjectImplToJson(
 ) => <String, dynamic>{
   'name': instance.name,
   'projectId': instance.projectId,
+  'projectNumber': instance.projectNumber,
   'status': instance.status,
   'created': instance.created?.toIso8601String(),
 };

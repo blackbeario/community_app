@@ -56,14 +56,17 @@ class UserPermissionsScreen extends ConsumerWidget {
     List<Group> groups,
   ) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       children: [
         // Header
-        const Text(
-          'Manage your notification preferences',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 0, 0),
+          child: const Text(
+            'Manage your notification preferences',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
 
         // Announcements section
         Card(
@@ -73,15 +76,15 @@ class UserPermissionsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Announcements',
+                  'Community Announcements',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Receive notifications from administrators',
+                  'Events, closures, hazards or important alerts relevent to the entire community.',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 SwitchListTile(
                   title: const Text('Enable Announcements'),
                   value: preferences.announcements,
@@ -95,7 +98,29 @@ class UserPermissionsScreen extends ConsumerWidget {
           ),
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
+
+        // Info section
+        Card(
+          color: Colors.blue.shade50,
+          child: const Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.blue),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'You can change these group settings at any time. Notifications will only be sent for groups you select and currently only includes direct @mentions. We may add the ability to follow message threads.',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 8),
 
         // Group notifications section
         Card(
@@ -110,7 +135,7 @@ class UserPermissionsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Choose which groups send you notifications',
+                  'Choose which individual groups can send you notifications',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 12),
@@ -131,27 +156,7 @@ class UserPermissionsScreen extends ConsumerWidget {
           ),
         ),
 
-        const SizedBox(height: 24),
-
-        // Info section
-        Card(
-          color: Colors.blue.shade50,
-          child: const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'You can change these settings at any time. Notifications will only be sent for groups you are a member of.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        const SizedBox(height: 16),
       ],
     );
   }

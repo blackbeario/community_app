@@ -146,7 +146,7 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
                 ),
               ),
 
-              // Groups Grid
+              // Groups List
               if (otherGroups.isEmpty)
                 SliverToBoxAdapter(
                   child: Center(
@@ -172,13 +172,7 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
                   ),
                 )
               else
-                SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 0,
-                    childAspectRatio: 0.9,
-                  ),
+                SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final group = otherGroups[index];

@@ -1,17 +1,20 @@
 import 'dart:io';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../models/message.dart';
 import '../../services/auth_service.dart';
-import '../../services/message_service.dart';
-import '../../services/user_cache_sync_service.dart';
+import '../../services/image_picker_service.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
+import '../../viewmodels/messaging/message_viewmodel.dart';
+import 'widgets/image_source_dialog.dart';
+import 'widgets/message_image_preview.dart';
+import 'widgets/message_input_field.dart';
+import 'widgets/group_badge.dart';
+import 'widgets/mention_counter.dart';
 
 /// Screen for creating a new message in a group
 class CreateMessageScreen extends ConsumerStatefulWidget {
@@ -30,33 +33,24 @@ class CreateMessageScreen extends ConsumerStatefulWidget {
 
 class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _contentController = TextEditingController();
-  final _imagePicker = ImagePicker();
   final GlobalKey<FlutterMentionsState> _mentionsKey = GlobalKey<FlutterMentionsState>();
 
   File? _selectedImage;
   bool _isSubmitting = false;
   final List<String> _mentionedUserIds = [];
 
-  @override
-  void dispose() {
-    _contentController.dispose();
-    super.dispose();
-  }
-
   Future<void> _pickImage() async {
     try {
-      final XFile? image = await _imagePicker.pickImage(
+      final imagePickerService = ref.read(imagePickerServiceProvider);
+      final file = await imagePickerService.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
         maxHeight: 1920,
         imageQuality: 85,
       );
 
-      if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
+      if (file != null) {
+        setState(() => _selectedImage = file);
       }
     } catch (e) {
       if (mounted) {
@@ -72,17 +66,16 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
 
   Future<void> _takePhoto() async {
     try {
-      final XFile? image = await _imagePicker.pickImage(
+      final imagePickerService = ref.read(imagePickerServiceProvider);
+      final file = await imagePickerService.pickImage(
         source: ImageSource.camera,
         maxWidth: 1920,
         maxHeight: 1920,
         imageQuality: 85,
       );
 
-      if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
+      if (file != null) {
+        setState(() => _selectedImage = file);
       }
     } catch (e) {
       if (mounted) {
@@ -97,40 +90,10 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
   }
 
   void _removeImage() {
-    setState(() {
-      _selectedImage = null;
-    });
-  }
-
-  Future<String> _uploadMessageImage(File file, String userId, String messageId) async {
-    final fileBytes = await file.readAsBytes();
-    final path = 'messages/$userId/$messageId.jpg';
-    final storageRef = FirebaseStorage.instance.ref().child(path);
-
-    final metadata = SettableMetadata(contentType: 'image/jpeg');
-    final uploadTask = storageRef.putData(fileBytes, metadata);
-
-    final snapshot = await uploadTask;
-    final url = await snapshot.ref.getDownloadURL();
-
-    return url;
+    setState(() => _selectedImage = null);
   }
 
   Future<void> _submitMessage() async {
-    // Get content from FlutterMentions (use text for display, markupText has IDs)
-    final content = _mentionsKey.currentState?.controller?.text ?? '';
-
-    // Validate content
-    if (content.trim().isEmpty && _selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a message or add an image'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,101 +105,47 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
       return;
     }
 
-    // Check if posting to announcements group - only admins allowed
-    if (widget.groupId == 'announcements') {
-      final currentAppUser = ref.read(currentAppUserProvider).valueOrNull;
-      if (currentAppUser == null || !currentAppUser.isAdmin) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Only administrators can post announcements'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-    }
+    final currentAppUser = ref.read(currentAppUserProvider).valueOrNull;
+    final content = _mentionsKey.currentState?.controller?.text ?? '';
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    setState(() => _isSubmitting = true);
 
     try {
-      final messageService = ref.read(messageServiceProvider);
+      final viewModel = ref.read(messageViewModelProvider.notifier);
 
-      // Generate message ID first so we can use it for image upload path
-      final messageId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      // Upload image to Firebase Storage if selected
-      String? imageUrl;
-      if (_selectedImage != null) {
-        imageUrl = await _uploadMessageImage(
-          _selectedImage!,
-          currentUser.uid,
-          messageId,
-        );
-      }
-
-      final message = Message(
-        id: messageId,
+      final message = await viewModel.createMessage(
         groupId: widget.groupId,
         userId: currentUser.uid,
-        content: content.trim(),
-        imageUrl: imageUrl,
-        timestamp: DateTime.now(),
-        likes: [],
-        commentCount: 0,
+        content: content,
+        imageFile: _selectedImage,
         mentions: _mentionedUserIds,
+        isAdmin: currentAppUser?.isAdmin ?? false,
       );
 
-      await messageService.postMessage(message);
-
       if (mounted) {
-        // Return the newly created message to refresh the list
         context.pop(message);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to post message: $e'),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
+        setState(() => _isSubmitting = false);
       }
     }
   }
 
   void _showImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
-              onTap: () {
-                context.pop();
-                _pickImage();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Take a photo'),
-              onTap: () {
-                context.pop();
-                _takePhoto();
-              },
-            ),
-          ],
-        ),
-      ),
+    ImageSourceDialog.show(
+      context,
+      onCamera: _takePhoto,
+      onGallery: _pickImage,
     );
   }
 
@@ -290,151 +199,28 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (widget.groupName != null) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.group,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Posting to ${widget.groupName}',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      GroupBadge(groupName: widget.groupName!),
                       const SizedBox(height: 16),
                     ],
-                    FlutterMentions(
-                      key: _mentionsKey,
-                      suggestionPosition: SuggestionPosition.Bottom,
-                      maxLines: 10,
-                      minLines: 5,
-                      autofocus: true,
+                    MessageInputField(
+                      mentionsKey: _mentionsKey,
                       enabled: !_isSubmitting,
-                      decoration: InputDecoration(
-                        hintText: 'What\'s on your mind? Type @ to mention someone',
-                        hintStyle: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.greyLight),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.greyLight),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.primary,
-                            width: 2,
-                          ),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.white,
-                      ),
-                      style: AppTextStyles.bodyMedium,
-                      mentions: [
-                        Mention(
-                          trigger: '@',
-                          style: TextStyle(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          data: ref.watch(allCachedUsersProvider).when(
-                            data: (users) => users.map((user) => {
-                              'id': user.id,
-                              'display': user.name,
-                              'photo': user.photoUrl ?? '',
-                            }).toList(),
-                            loading: () => [],
-                            error: (_, __) => [],
-                          ),
-                          matchAll: true,
-                          suggestionBuilder: (data) {
-                            return Container(
-                              padding: const EdgeInsets.all(10),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage: data['photo'] != null && data['photo'].toString().isNotEmpty
-                                      ? NetworkImage(data['photo'] as String)
-                                      : null,
-                                    child: data['photo'] == null || data['photo'].toString().isEmpty
-                                      ? Text(
-                                          (data['display'] as String)[0].toUpperCase(),
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        )
-                                      : null,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    data['display'] as String,
-                                    style: AppTextStyles.bodyMedium,
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                      hintText: 'What\'s on your mind? Type @ to mention someone',
                       onMentionAdd: (mention) {
-                        // Track mentioned user IDs
                         final userId = mention['id'] as String;
                         if (!_mentionedUserIds.contains(userId)) {
-                          setState(() {
-                            _mentionedUserIds.add(userId);
-                          });
+                          setState(() => _mentionedUserIds.add(userId));
                         }
                       },
                       onChanged: (value) {
-                        // Update form validation
                         _formKey.currentState?.validate();
                       },
                     ),
                     if (_selectedImage != null) ...[
                       const SizedBox(height: 16),
-                      Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              _selectedImage!,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: IconButton(
-                              onPressed: _removeImage,
-                              icon: const Icon(Icons.close),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.black54,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                      MessageImagePreview(
+                        image: _selectedImage!,
+                        onRemove: _removeImage,
                       ),
                     ],
                   ],
@@ -458,23 +244,7 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
                     tooltip: 'Add image',
                   ),
                   const Spacer(),
-                  if (_mentionedUserIds.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.alternate_email, size: 16, color: AppColors.accent),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${_mentionedUserIds.length}',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  MentionCounter(count: _mentionedUserIds.length),
                 ],
               ),
             ),

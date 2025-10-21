@@ -308,6 +308,124 @@ class MessageListScreen extends ConsumerWidget {
 - Keep views simple - delegate logic to ViewModels
 - Store views in `lib/views/{feature}/`
 
+**CRITICAL: Separation of UI and Business Logic**
+
+❌ **DON'T put business logic in UI widgets:**
+```dart
+// BAD: Business logic in the widget
+class CreateGroupDialog extends ConsumerStatefulWidget {
+  Future<void> _createGroup() async {
+    // DON'T: Direct Firebase calls from UI
+    final groupService = ref.read(groupServiceProvider);
+
+    // DON'T: Business logic like ID generation in UI
+    final groupId = _nameController.text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+
+    final group = Group(id: groupId, ...);
+    await groupService.createGroup(group);
+  }
+
+  Future<void> _generateEmoji() async {
+    // DON'T: Direct Cloud Functions calls from UI
+    final functions = ref.read(firebaseFunctionsProvider);
+    final callable = functions.httpsCallable('generateGroupEmoji');
+    final result = await callable.call({...});
+  }
+}
+```
+
+✅ **DO move business logic to ViewModels:**
+```dart
+// GOOD: Clean UI that delegates to ViewModel
+class CreateGroupDialog extends ConsumerStatefulWidget {
+  Future<void> _createGroup() async {
+    // DO: Call ViewModel methods
+    final viewModel = ref.read(adminViewModelProvider.notifier);
+    await viewModel.createGroup(
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+      isPublic: _isPublic,
+      icon: _generatedEmoji,
+    );
+  }
+
+  Future<void> _generateEmoji() async {
+    // DO: Call ViewModel methods
+    final viewModel = ref.read(adminViewModelProvider.notifier);
+    final emoji = await viewModel.generateGroupEmoji(
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+    );
+  }
+}
+
+// GOOD: Business logic in ViewModel
+@riverpod
+class AdminViewModel extends _$AdminViewModel {
+  Future<String> generateGroupEmoji({
+    required String name,
+    required String description,
+  }) async {
+    final functions = ref.read(firebaseFunctionsProvider);
+    final callable = functions.httpsCallable('generateGroupEmoji');
+    final result = await callable.call({
+      'name': name,
+      'description': description,
+    });
+    return result.data['emoji'] as String;
+  }
+
+  Future<void> createGroup({
+    required String name,
+    required String description,
+    required bool isPublic,
+    String? icon,
+  }) async {
+    final groupService = ref.read(groupServiceProvider);
+
+    // Business logic stays in ViewModel
+    final groupId = name
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .replaceAll(RegExp(r'^-|-$'), '');
+
+    final group = Group(
+      id: groupId,
+      name: name.trim(),
+      description: description.trim(),
+      icon: icon,
+      isPublic: isPublic,
+      createdAt: DateTime.now(),
+    );
+
+    await groupService.createGroup(group);
+  }
+}
+```
+
+**What belongs in ViewModels vs Views:**
+
+**ViewModel (Business Logic):**
+- Data transformation and validation
+- ID generation, string formatting
+- Direct calls to Services
+- Direct calls to Firebase Functions
+- Complex calculations
+- Date/time manipulation
+- State management beyond simple form state
+
+**View (UI Only):**
+- Form controllers (TextEditingController)
+- Simple UI state (loading, selected items)
+- Navigation calls
+- Showing dialogs/snackbars
+- Building widgets
+- Handling user input events
+- Calling ViewModel methods
+
 ---
 
 ## 6. Widgets (Reusable Components)
@@ -354,10 +472,11 @@ class MessageCard extends StatelessWidget {
 
 ### Child Widget Organization
 
-**ALWAYS create separate widget classes instead of widget builder methods:**
+**CRITICAL RULE: ALWAYS create separate widget files instead of widget builder methods or inline classes**
 
 ❌ **DON'T do this:**
 ```dart
+// DON'T use widget builder methods
 class ProfileScreen extends ConsumerWidget {
   Widget _buildActionButton({required IconData icon}) {
     return ElevatedButton(
@@ -370,11 +489,18 @@ class ProfileScreen extends ConsumerWidget {
     return Container(...);
   }
 }
+
+// DON'T define widgets inline in the same file
+class AdminScreen extends ConsumerWidget { ... }
+
+class CreateDialog extends ConsumerStatefulWidget { ... }
+
+class DeleteDialog extends ConsumerStatefulWidget { ... }
 ```
 
 ✅ **DO this instead:**
 ```dart
-// Create separate widget files in a widgets/ subdirectory
+// ALWAYS create separate files for widget classes
 // views/profile/widgets/profile_action_button.dart
 class ProfileActionButton extends StatelessWidget {
   final IconData icon;
@@ -396,6 +522,8 @@ class ProfileActionButton extends StatelessWidget {
 }
 
 // views/profile/profile_screen.dart
+import 'widgets/profile_action_button.dart';
+
 class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ProfileActionButton(
@@ -412,11 +540,23 @@ class ProfileScreen extends ConsumerWidget {
 - Clearer widget tree and dependencies
 - Follows Flutter best practices
 - Enables widget composition
+- Makes files more maintainable and easier to navigate
+- Separates concerns and improves readability
 
-**Organization:**
+**Organization Rules:**
+- **ONE widget class per file** (except private state classes like `_WidgetNameState`)
 - Store screen-specific widgets in `views/{feature}/widgets/`
-- Store shared widgets in `lib/widgets/`
-- One widget per file
+- Store shared/reusable widgets in `lib/widgets/`
+- Name files using snake_case matching the widget class name
+- Always import widget files at the top of the parent screen
+
+**When to Extract Widgets:**
+- Any dialog or modal (e.g., `CreateGroupDialog` → `widgets/create_group_dialog.dart`)
+- Any custom card or list item (e.g., `AdminActionCard` → `widgets/admin_action_card.dart`)
+- Any reusable component used more than once
+- Any widget with its own state or business logic
+- Any widget builder method (`_buildSomething()`) should become a separate file
+- If a widget is complex (>30 lines), extract it to its own file
 
 ---
 

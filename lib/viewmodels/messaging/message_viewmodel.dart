@@ -76,6 +76,74 @@ class MessageViewModel extends _$MessageViewModel {
     });
   }
 
+  /// Create a new message with validation and permission checks
+  Future<Message> createMessage({
+    required String groupId,
+    required String userId,
+    required String content,
+    File? imageFile,
+    List<String> mentions = const [],
+    required bool isAdmin,
+  }) async {
+    // Validate content
+    if (content.trim().isEmpty && imageFile == null) {
+      throw Exception('Please enter a message or add an image');
+    }
+
+    // Check announcements group permissions
+    if (groupId == 'announcements' && !isAdmin) {
+      throw Exception('Only administrators can post announcements');
+    }
+
+    final messageId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // Upload image to Firebase Storage if provided
+    String? imageUrl;
+    if (imageFile != null) {
+      imageUrl = await _uploadMessageImage(imageFile, userId, messageId);
+    }
+
+    final message = Message(
+      id: messageId,
+      groupId: groupId,
+      userId: userId,
+      content: content,
+      imageUrl: imageUrl,
+      timestamp: DateTime.now(),
+      likes: [],
+      commentCount: 0,
+      mentions: mentions,
+    );
+
+    await ref.read(messageServiceProvider).postMessage(message);
+    return message;
+  }
+
+  /// Upload message image to Firebase Storage
+  Future<String> _uploadMessageImage(File file, String userId, String messageId) async {
+    try {
+      final fileBytes = await file.readAsBytes();
+      final path = 'messages/$userId/$messageId.jpg';
+      final storageRef = FirebaseStorage.instance.ref().child(path);
+
+      final metadata = SettableMetadata(contentType: 'image/jpeg');
+      final uploadTask = storageRef.putData(fileBytes, metadata);
+
+      final snapshot = await uploadTask;
+      final url = await snapshot.ref.getDownloadURL();
+
+      return url;
+    } catch (error, stackTrace) {
+      await FirebaseCrashlytics.instance.recordError(
+        error,
+        stackTrace,
+        reason: 'Failed to upload message image',
+        information: ['userId: $userId', 'messageId: $messageId'],
+      );
+      rethrow;
+    }
+  }
+
   /// Like a message
   Future<void> likeMessage(String messageId, String userId) async {
     state = await AsyncValue.guard(() async {

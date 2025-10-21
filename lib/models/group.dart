@@ -20,16 +20,23 @@ class Group with _$Group {
   factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
 }
 
-class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
+class TimestampConverter implements JsonConverter<DateTime, dynamic> {
   const TimestampConverter();
 
   @override
-  DateTime fromJson(Timestamp timestamp) {
-    return timestamp.toDate();
+  DateTime fromJson(dynamic json) {
+    if (json is Timestamp) {
+      return json.toDate();
+    } else if (json is int) {
+      return DateTime.fromMillisecondsSinceEpoch(json);
+    } else if (json is DateTime) {
+      return json;
+    }
+    throw ArgumentError('Cannot convert $json to DateTime');
   }
 
   @override
-  Timestamp toJson(DateTime dateTime) {
-    return Timestamp.fromDate(dateTime);
+  dynamic toJson(DateTime dateTime) {
+    return dateTime.millisecondsSinceEpoch;
   }
 }

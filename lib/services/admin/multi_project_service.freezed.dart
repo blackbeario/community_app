@@ -23,6 +23,7 @@ CommunityProject _$CommunityProjectFromJson(Map<String, dynamic> json) {
 mixin _$CommunityProject {
   String get name => throw _privateConstructorUsedError;
   String get projectId => throw _privateConstructorUsedError;
+  String? get projectNumber => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   DateTime? get created => throw _privateConstructorUsedError;
 
@@ -43,7 +44,13 @@ abstract class $CommunityProjectCopyWith<$Res> {
     $Res Function(CommunityProject) then,
   ) = _$CommunityProjectCopyWithImpl<$Res, CommunityProject>;
   @useResult
-  $Res call({String name, String projectId, String status, DateTime? created});
+  $Res call({
+    String name,
+    String projectId,
+    String? projectNumber,
+    String status,
+    DateTime? created,
+  });
 }
 
 /// @nodoc
@@ -63,6 +70,7 @@ class _$CommunityProjectCopyWithImpl<$Res, $Val extends CommunityProject>
   $Res call({
     Object? name = null,
     Object? projectId = null,
+    Object? projectNumber = freezed,
     Object? status = null,
     Object? created = freezed,
   }) {
@@ -76,6 +84,10 @@ class _$CommunityProjectCopyWithImpl<$Res, $Val extends CommunityProject>
                 ? _value.projectId
                 : projectId // ignore: cast_nullable_to_non_nullable
                       as String,
+            projectNumber: freezed == projectNumber
+                ? _value.projectNumber
+                : projectNumber // ignore: cast_nullable_to_non_nullable
+                      as String?,
             status: null == status
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
@@ -99,7 +111,13 @@ abstract class _$$CommunityProjectImplCopyWith<$Res>
   ) = __$$CommunityProjectImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, String projectId, String status, DateTime? created});
+  $Res call({
+    String name,
+    String projectId,
+    String? projectNumber,
+    String status,
+    DateTime? created,
+  });
 }
 
 /// @nodoc
@@ -118,6 +136,7 @@ class __$$CommunityProjectImplCopyWithImpl<$Res>
   $Res call({
     Object? name = null,
     Object? projectId = null,
+    Object? projectNumber = freezed,
     Object? status = null,
     Object? created = freezed,
   }) {
@@ -131,6 +150,10 @@ class __$$CommunityProjectImplCopyWithImpl<$Res>
             ? _value.projectId
             : projectId // ignore: cast_nullable_to_non_nullable
                   as String,
+        projectNumber: freezed == projectNumber
+            ? _value.projectNumber
+            : projectNumber // ignore: cast_nullable_to_non_nullable
+                  as String?,
         status: null == status
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
@@ -150,6 +173,7 @@ class _$CommunityProjectImpl implements _CommunityProject {
   const _$CommunityProjectImpl({
     required this.name,
     required this.projectId,
+    this.projectNumber,
     this.status = 'active',
     this.created,
   });
@@ -162,6 +186,8 @@ class _$CommunityProjectImpl implements _CommunityProject {
   @override
   final String projectId;
   @override
+  final String? projectNumber;
+  @override
   @JsonKey()
   final String status;
   @override
@@ -169,7 +195,7 @@ class _$CommunityProjectImpl implements _CommunityProject {
 
   @override
   String toString() {
-    return 'CommunityProject(name: $name, projectId: $projectId, status: $status, created: $created)';
+    return 'CommunityProject(name: $name, projectId: $projectId, projectNumber: $projectNumber, status: $status, created: $created)';
   }
 
   @override
@@ -180,6 +206,8 @@ class _$CommunityProjectImpl implements _CommunityProject {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.projectId, projectId) ||
                 other.projectId == projectId) &&
+            (identical(other.projectNumber, projectNumber) ||
+                other.projectNumber == projectNumber) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.created, created) || other.created == created));
   }
@@ -187,7 +215,7 @@ class _$CommunityProjectImpl implements _CommunityProject {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, name, projectId, status, created);
+      Object.hash(runtimeType, name, projectId, projectNumber, status, created);
 
   /// Create a copy of CommunityProject
   /// with the given fields replaced by the non-null parameter values.
@@ -210,6 +238,7 @@ abstract class _CommunityProject implements CommunityProject {
   const factory _CommunityProject({
     required final String name,
     required final String projectId,
+    final String? projectNumber,
     final String status,
     final DateTime? created,
   }) = _$CommunityProjectImpl;
@@ -221,6 +250,8 @@ abstract class _CommunityProject implements CommunityProject {
   String get name;
   @override
   String get projectId;
+  @override
+  String? get projectNumber;
   @override
   String get status;
   @override

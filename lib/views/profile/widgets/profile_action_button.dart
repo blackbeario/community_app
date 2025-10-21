@@ -16,8 +16,8 @@ class ProfileActionButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.surface,
-        foregroundColor: Colors.black87,
+        backgroundColor: AppColors.accent,
+        foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(

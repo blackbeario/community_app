@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_text_styles.dart';
-import '../models/group.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 
-/// A card widget to display a group with icon, name, and description
-class GroupCard extends StatelessWidget {
-  final Group group;
+class AdminActionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
   final VoidCallback onTap;
 
-  const GroupCard({
+  const AdminActionCard({
     super.key,
-    required this.group,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
     required this.onTap,
   });
 
@@ -30,32 +34,29 @@ class GroupCard extends StatelessWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
-            child: Text(
-              group.icon ?? '📁',
-              style: const TextStyle(fontSize: 28),
+            child: Icon(
+              icon,
+              size: 28,
+              color: iconColor,
             ),
           ),
         ),
         title: Text(
-          group.name,
+          title,
           style: AppTextStyles.bodyLarge.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          group.description,
+          subtitle,
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
         ),
         trailing: const Icon(
           Icons.chevron_right,

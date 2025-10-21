@@ -16,9 +16,7 @@ _$GroupImpl _$$GroupImplFromJson(Map<String, dynamic> json) => _$GroupImpl(
   icon: json['icon'] as String?,
   memberCount: (json['memberCount'] as num?)?.toInt() ?? 0,
   isPublic: json['isPublic'] as bool? ?? true,
-  createdAt: const TimestampConverter().fromJson(
-    json['createdAt'] as Timestamp,
-  ),
+  createdAt: const TimestampConverter().fromJson(json['createdAt']),
 );
 
 Map<String, dynamic> _$$GroupImplToJson(_$GroupImpl instance) =>

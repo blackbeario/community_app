@@ -4,15 +4,14 @@ import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 import '../../models/message.dart';
 import '../../models/user.dart';
 import '../../services/image_picker_service.dart';
-import '../../services/user_cache_sync_service.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/messaging/message_viewmodel.dart';
 import '../../widgets/message_card.dart';
-import '../../widgets/comment_card.dart';
+import 'widgets/comment_input_section.dart';
+import 'widgets/message_with_comments_view.dart';
 
 class MessageDetailScreen extends ConsumerStatefulWidget {
   final Message message;
@@ -29,25 +28,10 @@ class MessageDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
-  final TextEditingController _commentController = TextEditingController();
-  final FocusNode _commentFocusNode = FocusNode();
   final GlobalKey<FlutterMentionsState> _mentionsKey = GlobalKey<FlutterMentionsState>();
   File? _selectedImage;
   bool _isSubmitting = false;
   final List<String> _mentionedUserIds = [];
-
-  @override
-  void initState() {
-    super.initState();
-    // No longer need listener since validation happens in _submitComment
-  }
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    _commentFocusNode.dispose();
-    super.dispose();
-  }
 
   Future<void> _pickImage() async {
     try {
@@ -60,9 +44,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
       );
 
       if (file != null) {
-        setState(() {
-          _selectedImage = file;
-        });
+        setState(() => _selectedImage = file);
       }
     } catch (e) {
       if (mounted) {
@@ -77,7 +59,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
     final currentUser = ref.read(currentAppUserProvider).value;
     if (currentUser == null) return;
 
-    // Get content from FlutterMentions (use text for display, markupText has IDs)
+    // Get content from FlutterMentions
     final content = _mentionsKey.currentState?.controller?.text.trim() ?? '';
     if (content.isEmpty && _selectedImage == null) return;
 
@@ -98,7 +80,6 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
         _selectedImage = null;
         _mentionedUserIds.clear();
       });
-      _commentFocusNode.unfocus();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -107,9 +88,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
+        setState(() => _isSubmitting = false);
       }
     }
   }
@@ -117,7 +96,6 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final commentsAsync = ref.watch(messageCommentsProvider(widget.message.id));
-    // Watch for live message updates to get current comment count and likes
     final messageAsync = ref.watch(messageStreamProvider(widget.message.id));
 
     return Scaffold(
@@ -134,23 +112,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
               loading: () => SingleChildScrollView(
                 child: Column(
                   children: [
-                    messageAsync.when(
-                      data: (liveMessage) => MessageCard(
-                        message: liveMessage ?? widget.message,
-                        messageAuthor: widget.messageAuthor,
-                        onTap: null,
-                      ),
-                      loading: () => MessageCard(
-                        message: widget.message,
-                        messageAuthor: widget.messageAuthor,
-                        onTap: null,
-                      ),
-                      error: (_, __) => MessageCard(
-                        message: widget.message,
-                        messageAuthor: widget.messageAuthor,
-                        onTap: null,
-                      ),
-                    ),
+                    _buildMessageCard(messageAsync),
                     const Divider(height: 1, thickness: 1),
                     const SizedBox(height: 16),
                     const Center(child: CircularProgressIndicator()),
@@ -160,23 +122,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
               error: (error, stack) => SingleChildScrollView(
                 child: Column(
                   children: [
-                    messageAsync.when(
-                      data: (liveMessage) => MessageCard(
-                        message: liveMessage ?? widget.message,
-                        messageAuthor: widget.messageAuthor,
-                        onTap: null,
-                      ),
-                      loading: () => MessageCard(
-                        message: widget.message,
-                        messageAuthor: widget.messageAuthor,
-                        onTap: null,
-                      ),
-                      error: (_, __) => MessageCard(
-                        message: widget.message,
-                        messageAuthor: widget.messageAuthor,
-                        onTap: null,
-                      ),
-                    ),
+                    _buildMessageCard(messageAsync),
                     const Divider(height: 1, thickness: 1),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -185,318 +131,51 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                   ],
                 ),
               ),
-              data: (comments) {
-                return CustomScrollView(
-                  slivers: [
-                    // Message at the top
-                    SliverToBoxAdapter(
-                      child: messageAsync.when(
-                        data: (liveMessage) => MessageCard(
-                          message: liveMessage ?? widget.message,
-                          messageAuthor: widget.messageAuthor,
-                          onTap: null,
-                        ),
-                        loading: () => MessageCard(
-                          message: widget.message,
-                          messageAuthor: widget.messageAuthor,
-                          onTap: null,
-                        ),
-                        error: (_, __) => MessageCard(
-                          message: widget.message,
-                          messageAuthor: widget.messageAuthor,
-                          onTap: null,
-                        ),
-                      ),
-                    ),
-
-                    // Divider
-                    const SliverToBoxAdapter(
-                      child: Divider(height: 1, thickness: 1),
-                    ),
-
-                    // Comments header
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Comments',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            messageAsync.when(
-                              data: (liveMessage) => Text(
-                                '(${liveMessage?.commentCount ?? widget.message.commentCount})',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              loading: () => Text(
-                                '(${widget.message.commentCount})',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              error: (_, __) => Text(
-                                '(${widget.message.commentCount})',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Comments list or empty state
-                    if (comments.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.comment_outlined,
-                                size: 64,
-                                color: AppColors.textSecondary.withValues(alpha: 0.5),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No comments yet',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Be the first to comment!',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final comment = comments[index];
-                              final commentUserAsync = ref.watch(messageUserProvider(comment.userId));
-
-                              return commentUserAsync.when(
-                                loading: () => const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
-                                ),
-                                error: (error, stack) => Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text('Error loading user: $error'),
-                                ),
-                                data: (commentUser) {
-                                  if (commentUser == null) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return CommentCard(
-                                    comment: comment,
-                                    commentAuthor: commentUser,
-                                  );
-                                },
-                              );
-                            },
-                            childCount: comments.length,
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
+              data: (comments) => MessageWithCommentsView(
+                message: widget.message,
+                messageAuthor: widget.messageAuthor,
+                messageAsync: messageAsync,
+                comments: comments,
+              ),
             ),
           ),
 
           // Comment input
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Image preview
-                if (_selectedImage != null)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            _selectedImage!,
-                            height: 100,
-                            width: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedImage = null;
-                              });
-                            },
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.black54,
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Input row
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        // Image picker button
-                        IconButton(
-                          icon: const Icon(Icons.image, color: AppColors.accent),
-                          onPressed: _isSubmitting ? null : _pickImage,
-                        ),
-                        const SizedBox(width: 8),
-
-                        // Text input with mentions
-                        Expanded(
-                          child: FlutterMentions(
-                            key: _mentionsKey,
-                            suggestionPosition: SuggestionPosition.Top,
-                            maxLines: 5,
-                            minLines: 1,
-                            enabled: !_isSubmitting,
-                            decoration: InputDecoration(
-                              hintText: 'Add a comment... Type @ to mention',
-                              hintStyle: AppTextStyles.inputHint,
-                              filled: true,
-                              fillColor: AppColors.background,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                            ),
-                            style: AppTextStyles.bodyMedium,
-                            mentions: [
-                              Mention(
-                                trigger: '@',
-                                style: TextStyle(
-                                  color: AppColors.accent,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                data: ref.watch(allCachedUsersProvider).when(
-                                  data: (users) => users.map((user) => {
-                                    'id': user.id,
-                                    'display': user.name,
-                                    'photo': user.photoUrl ?? '',
-                                  }).toList(),
-                                  loading: () => [],
-                                  error: (_, __) => [],
-                                ),
-                                matchAll: true,
-                                suggestionBuilder: (data) {
-                                  return Container(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 16,
-                                          backgroundImage: data['photo'] != null && data['photo'].toString().isNotEmpty
-                                            ? NetworkImage(data['photo'] as String)
-                                            : null,
-                                          child: data['photo'] == null || data['photo'].toString().isEmpty
-                                            ? Text(
-                                                (data['display'] as String)[0].toUpperCase(),
-                                                style: const TextStyle(fontSize: 14),
-                                              )
-                                            : null,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          data['display'] as String,
-                                          style: AppTextStyles.bodySmall,
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                            onMentionAdd: (mention) {
-                              final userId = mention['id'] as String;
-                              if (!_mentionedUserIds.contains(userId)) {
-                                setState(() {
-                                  _mentionedUserIds.add(userId);
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-
-                        // Send button
-                        _isSubmitting
-                            ? const SizedBox(
-                                width: 40,
-                                height: 40,
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                ),
-                              )
-                            : IconButton(
-                                icon: const Icon(Icons.send, color: AppColors.accent),
-                                onPressed: _submitComment,
-                              ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          CommentInputSection(
+            mentionsKey: _mentionsKey,
+            selectedImage: _selectedImage,
+            isSubmitting: _isSubmitting,
+            onPickImage: _pickImage,
+            onRemoveImage: () => setState(() => _selectedImage = null),
+            onSubmit: _submitComment,
+            onMentionAdd: (mention) {
+              final userId = mention['id'] as String;
+              if (!_mentionedUserIds.contains(userId)) {
+                setState(() => _mentionedUserIds.add(userId));
+              }
+            },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMessageCard(AsyncValue<Message?> messageAsync) {
+    return messageAsync.when(
+      data: (liveMessage) => MessageCard(
+        message: liveMessage ?? widget.message,
+        messageAuthor: widget.messageAuthor,
+        onTap: null,
+      ),
+      loading: () => MessageCard(
+        message: widget.message,
+        messageAuthor: widget.messageAuthor,
+        onTap: null,
+      ),
+      error: (_, __) => MessageCard(
+        message: widget.message,
+        messageAuthor: widget.messageAuthor,
+        onTap: null,
       ),
     );
   }

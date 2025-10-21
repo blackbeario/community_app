@@ -84,6 +84,26 @@ final firebaseMessagingProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef FirebaseMessagingRef = AutoDisposeProviderRef<FirebaseMessaging>;
+String _$firebaseFunctionsHash() => r'7f01e586b465e665d69fb7b745b950f78b206c50';
+
+/// Provider for FirebaseFunctions instance
+///
+/// Copied from [firebaseFunctions].
+@ProviderFor(firebaseFunctions)
+final firebaseFunctionsProvider =
+    AutoDisposeProvider<FirebaseFunctions>.internal(
+      firebaseFunctions,
+      name: r'firebaseFunctionsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$firebaseFunctionsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef FirebaseFunctionsRef = AutoDisposeProviderRef<FirebaseFunctions>;
 String _$authStateChangesHash() => r'7e2230d665098f97101510d80be5c9dd82d44903';
 
 /// Provider for current auth state
