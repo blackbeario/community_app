@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../services/admin/multi_project_service.dart';
 import 'create_community_screen.dart';
+import 'widgets/no_project_selected_view.dart';
+import 'widgets/admin_dashboard_view.dart';
 
 /// Multi-Project Admin Screen
 /// Allows admins to manage multiple community Firebase projects from one interface
@@ -115,274 +116,21 @@ class MultiProjectAdminScreen extends ConsumerWidget {
           // Dashboard content
           Expanded(
             child: selectedProject == null
-                ? _buildNoProjectSelected()
-                : _buildAdminDashboard(context, ref, selectedProject),
+                ? const NoProjectSelectedView()
+                : AdminDashboardView(
+                    project: selectedProject,
+                    onCreateCommunity: () => _createCommunity(context, ref, selectedProject),
+                    onSeedGroups: () => _seedGroups(context, ref, selectedProject),
+                    onManageUsers: () => _manageUsers(context, ref, selectedProject),
+                    onCreateAdmin: () => _createAdmin(context, ref, selectedProject),
+                    onViewAnalytics: () => _viewAnalytics(context, ref, selectedProject),
+                    onOpenFirebaseConsole: () => _openFirebaseConsole(selectedProject),
+                    onDeployFunctions: () => _deployFunctions(context, ref, selectedProject),
+                  ),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildNoProjectSelected() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.business_outlined,
-              size: 64,
-              color: AppColors.textSecondary.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No project selected',
-              style: AppTextStyles.h3.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Select a community project above to manage it',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdminDashboard(
-    BuildContext context,
-    WidgetRef ref,
-    CommunityProject project,
-  ) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // Project Info Card
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.business,
-                    color: AppColors.accent,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        project.name,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        project.projectId,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (project.created != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Created ${_formatDate(project.created!)}',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(project.status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    project.status.toUpperCase(),
-                    style: AppTextStyles.caption.copyWith(
-                      color: _getStatusColor(project.status),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Note about web app
-        Card(
-          color: Colors.blue.shade50,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline, size: 20, color: Colors.blue),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'This admin panel is optimized for web/desktop. Mobile view is limited.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: Colors.blue.shade900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Admin Actions List
-        Text(
-          'Admin Actions',
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        _buildActionListTile(
-          customIcon: SvgPicture.asset(
-            'assets/icons/firebase_flame.svg',
-            width: 24,
-            height: 24,
-          ),
-          color: const Color(0xFFFF9800),
-          title: 'Create Community',
-          subtitle: 'Create a new Firebase community project',
-          onTap: () => _createCommunity(context, ref, project),
-        ),
-
-        _buildActionListTile(
-          icon: Icons.group_add,
-          color: Colors.blue,
-          title: 'Seed Groups',
-          subtitle: 'Initialize or update community groups',
-          onTap: () => _seedGroups(context, ref, project),
-        ),
-
-        _buildActionListTile(
-          icon: Icons.people,
-          color: Colors.green,
-          title: 'Manage Users',
-          subtitle: 'View and manage community members',
-          onTap: () => _manageUsers(context, ref, project),
-        ),
-
-        _buildActionListTile(
-          icon: Icons.admin_panel_settings,
-          color: Colors.orange,
-          title: 'Create Admin',
-          subtitle: 'Grant admin privileges to a user',
-          onTap: () => _createAdmin(context, ref, project),
-        ),
-
-        _buildActionListTile(
-          icon: Icons.analytics,
-          color: Colors.purple,
-          title: 'View Analytics',
-          subtitle: 'Community usage and statistics',
-          onTap: () => _viewAnalytics(context, ref, project),
-        ),
-
-        _buildActionListTile(
-          icon: Icons.open_in_new,
-          color: Colors.amber,
-          title: 'Firebase Console',
-          subtitle: 'Open Firebase console for this project',
-          onTap: () => _openFirebaseConsole(project),
-        ),
-
-        _buildActionListTile(
-          icon: Icons.cloud_upload,
-          color: Colors.teal,
-          title: 'Deploy Functions',
-          subtitle: 'Deploy Cloud Functions to this project',
-          onTap: () => _deployFunctions(context, ref, project),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionListTile({
-    IconData? icon,
-    Widget? customIcon,
-    required Color color,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: customIcon ?? Icon(icon, color: color, size: 24),
-        ),
-        title: Text(
-          title,
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-        onTap: onTap,
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'inactive':
-        return Colors.grey;
-      case 'maintenance':
-        return Colors.orange;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
   }
 
   // Action handlers

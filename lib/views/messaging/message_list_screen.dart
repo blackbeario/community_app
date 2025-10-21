@@ -5,13 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/user_avatar.dart';
-import '../../widgets/featured_group_card.dart';
-import '../../widgets/group_card.dart';
 import '../../widgets/message_search_bar.dart';
 import '../../widgets/message_search_results.dart';
 import '../../services/group_service.dart';
 import '../../services/cache_sync_service.dart';
-import '../../viewmodels/messaging/message_viewmodel.dart';
+import 'widgets/groups_list_view.dart';
 
 class MessageListScreen extends ConsumerStatefulWidget {
   const MessageListScreen({super.key});
@@ -28,20 +26,10 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
     super.initState();
     // Trigger background cache prefetch after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _prefetchMessagesInBackground();
+      // Run prefetch in background without blocking UI
+      final cacheSyncService = ref.read(cacheSyncServiceProvider);
+      cacheSyncService.prefetchAllGroups(messagesPerGroup: 50);
     });
-  }
-
-  /// Prefetch messages from all groups in the background for offline search
-  Future<void> _prefetchMessagesInBackground() async {
-    // Run in background without blocking UI
-    final cacheSyncService = ref.read(cacheSyncServiceProvider);
-    await cacheSyncService.prefetchAllGroups(messagesPerGroup: 50);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -87,106 +75,25 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
 
                 // Main content: Search results or Groups Grid
                 Expanded(
-                  child: _isSearching ? const MessageSearchResults() : _buildGroupsView(),
+                  child: _isSearching
+                      ? const MessageSearchResults()
+                      : ref.watch(selectableGroupsProvider).when(
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (error, stack) => Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                                  const SizedBox(height: 16),
+                                  Text('Error loading groups: $error'),
+                                ],
+                              ),
+                            ),
+                            data: (groups) => GroupsListView(groups: groups),
+                          ),
                 ),
               ],
             ),
-          ),
-        );
-      },
-    );
-  }
-
-
-  Widget _buildGroupsView() {
-    final groupsAsync = ref.watch(selectableGroupsProvider);
-
-    return groupsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text('Error loading groups: $error'),
-          ],
-        ),
-      ),
-      data: (allGroups) {
-        // Separate announcements from other groups
-        final announcementsGroup = allGroups.firstWhere(
-          (g) => g.id == 'announcements',
-          orElse: () => allGroups.first,
-        );
-
-        final otherGroups = allGroups
-            .where((g) => g.id != 'announcements')
-            .toList();
-
-        // Get message count for announcements
-        final announcementsMessagesAsync = ref.watch(groupMessagesProvider('announcements'));
-        final announcementsCount = announcementsMessagesAsync.maybeWhen(
-          data: (messages) => messages.length,
-          orElse: () => null,
-        );
-
-        return Container(
-          color: AppColors.background,
-          child: CustomScrollView(
-            slivers: [
-              // Featured Announcements Card
-              SliverToBoxAdapter(
-                child: FeaturedGroupCard(
-                  group: announcementsGroup,
-                  messageCount: announcementsCount,
-                  onTap: () {
-                    context.push('/messages/group/${announcementsGroup.id}', extra: announcementsGroup);
-                  },
-                ),
-              ),
-
-              // Groups List
-              if (otherGroups.isEmpty)
-                SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.group_outlined,
-                            size: 64,
-                            color: AppColors.textSecondary.withValues(alpha: 0.5),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No other groups available',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final group = otherGroups[index];
-                      return GroupCard(
-                        group: group,
-                        onTap: () {
-                          context.push('/messages/group/${group.id}', extra: group);
-                        },
-                      );
-                    },
-                    childCount: otherGroups.length,
-                  ),
-                ),
-            ],
           ),
         );
       },

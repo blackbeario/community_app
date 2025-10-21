@@ -1,15 +1,14 @@
-import 'package:community/views/messaging/create_message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/group.dart';
-import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/messaging/message_viewmodel.dart';
 import '../../widgets/message_card.dart';
 import '../../widgets/message_search_bar.dart';
 import '../../widgets/message_search_results.dart';
+import 'widgets/create_message_fab.dart';
 
 /// Screen to display messages for a specific group
 class GroupMessagesScreen extends ConsumerStatefulWidget {
@@ -188,34 +187,7 @@ class _GroupMessagesScreenState extends ConsumerState<GroupMessagesScreen> {
           ),
         ],
       ),
-      floatingActionButton: _buildFAB(context, ref),
-    );
-  }
-
-  Widget? _buildFAB(BuildContext context, WidgetRef ref) {
-    // For announcements group, only show FAB to admins
-    if (widget.groupId == 'announcements') {
-      final currentAppUser = ref.watch(currentAppUserProvider).valueOrNull;
-      if (currentAppUser == null || !currentAppUser.isAdmin) {
-        return null;
-      }
-    }
-
-    return FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CreateMessageScreen(groupId: widget.groupId),
-          ),
-        ).then((newMessage) {
-          if (newMessage != null) {
-            // Refresh messages list or add optimistically
-          }
-        });
-      },
-      backgroundColor: AppColors.accent,
-      child: const Icon(Icons.add, color: AppColors.white),
+      floatingActionButton: CreateMessageFab(groupId: widget.groupId),
     );
   }
 }

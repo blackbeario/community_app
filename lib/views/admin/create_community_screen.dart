@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/community_id_generator.dart';
 
 /// Screen for creating a new Firebase community project
 /// Collects the required fields for the create-community.sh script
@@ -375,24 +376,12 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   }
 
   void _updateGeneratedIds(String communityName) {
-    if (communityName.isEmpty) {
-      _projectIdController.clear();
-      _iosBundleIdController.clear();
-      _androidPackageController.clear();
-      return;
-    }
-
-    // Convert to lowercase, replace spaces with hyphens, remove special chars
-    final slug = communityName
-        .toLowerCase()
-        .trim()
-        .replaceAll(RegExp(r'\s+'), '-')
-        .replaceAll(RegExp(r'[^a-z0-9-]'), '');
+    final ids = CommunityIdGenerator.generateIds(communityName);
 
     setState(() {
-      _projectIdController.text = 'community-$slug';
-      _iosBundleIdController.text = 'io.vibesoftware.community.${slug.replaceAll('-', '')}';
-      _androidPackageController.text = 'io.vibesoftware.community.${slug.replaceAll('-', '')}';
+      _projectIdController.text = ids['projectId']!;
+      _iosBundleIdController.text = ids['iosBundleId']!;
+      _androidPackageController.text = ids['androidPackage']!;
     });
   }
 
