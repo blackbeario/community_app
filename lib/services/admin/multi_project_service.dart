@@ -10,6 +10,7 @@ class CommunityProject with _$CommunityProject {
   const factory CommunityProject({
     required String name,
     required String projectId,
+    String? projectNumber,
     @Default('active') String status,
     DateTime? created,
   }) = _CommunityProject;
@@ -27,6 +28,12 @@ final availableProjectsProvider = Provider<List<CommunityProject>>((ref) {
   // TODO: Load from scripts/configs/projects.json or a backend API
   // For now, return example projects
   return [
+  CommunityProject(
+      name: 'Cummings Cove',
+      projectId: 'community-app-001',
+      projectNumber: '1097511872453',
+      created: DateTime(2025, 10, 15),
+    ),
     CommunityProject(
       name: 'Champion Hills',
       projectId: 'community-champion-hills',

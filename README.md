@@ -5,6 +5,7 @@ The Community mobile app is a neighborhood-driven solution for residents to inte
 ## Features
 
 * Group Messaging
+* AI Icon Generation
 * Message Filtering
 * FCM Push Notifications
 * Group Notification Preferences

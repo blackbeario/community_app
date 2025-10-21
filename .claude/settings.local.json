@@ -23,7 +23,10 @@
       "Bash(firebase functions:log:*)",
       "Bash(open /Users/jfraz/Sites/community/ios/Runner.xcworkspace)",
       "Bash(flutter build:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Read(//Users/jfraz/.pub-cache/**)",
+      "Bash(firebase functions:secrets:set:*)",
+      "Bash(npm run deploy:*)"
     ],
     "deny": [],
     "ask": []

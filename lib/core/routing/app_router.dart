@@ -9,7 +9,9 @@ import '../../views/messaging/message_list_screen.dart';
 import '../../views/messaging/message_detail_screen_wrapper.dart';
 import '../../views/messaging/group_messages_screen.dart';
 import '../../views/profile/profile_screen.dart';
+import '../../views/admin/admin_screen.dart';
 import '../../models/group.dart';
+import '../../viewmodels/auth/auth_viewmodel.dart';
 
 part 'app_router.g.dart';
 
@@ -83,6 +85,11 @@ GoRouter goRouter(Ref ref) {
               name: 'profile',
               builder: (context, state) => const ProfileScreen(),
             ),
+            GoRoute(
+              path: '/admin',
+              name: 'admin',
+              builder: (context, state) => const AdminScreen(),
+            ),
           ],
         ),
         GoRoute(
@@ -109,32 +116,45 @@ class MainScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentUserAsync = ref.watch(currentAppUserProvider);
+    final isAdmin = currentUserAsync.maybeWhen(
+      data: (user) => user?.isAdmin ?? false,
+      orElse: () => false,
+    );
+
     return Scaffold(
       body: child,
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _getCurrentIndex(context),
+        currentIndex: _getCurrentIndex(context, isAdmin),
         onTap: (index) => _onItemTapped(context, index),
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.message),
             label: 'Messages',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
+          if (isAdmin)
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.admin_panel_settings),
+              label: 'Admin',
+            ),
         ],
       ),
     );
   }
 
-  int _getCurrentIndex(BuildContext context) {
+  int _getCurrentIndex(BuildContext context, bool isAdmin) {
     final location = GoRouterState.of(context).matchedLocation;
     switch (location) {
       case '/messages':
         return 0;
       case '/profile':
         return 1;
+      case '/admin':
+        return isAdmin ? 2 : 0;
       default:
         return 0;
     }
@@ -147,6 +167,9 @@ class MainScaffold extends ConsumerWidget {
         break;
       case 1:
         context.go('/profile');
+        break;
+      case 2:
+        context.go('/admin');
         break;
     }
   }

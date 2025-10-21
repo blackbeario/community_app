@@ -90,17 +90,32 @@ class FCMService {
         }
       }
 
-      // Get FCM token
       try {
         String? token = await _messaging.getToken();
         if (token != null) {
           developer.log('FCM Token obtained', name: 'FCM');
           await _saveFCMToken(userId, token);
         } else {
-          developer.log('Failed to get FCM token (expected on iOS Simulator)', name: 'FCM');
+          if (Platform.isIOS) {
+            developer.log(
+              'Failed to get FCM token - this is expected on iOS Simulator. '
+              'Push notifications only work on physical iOS devices.',
+              name: 'FCM',
+            );
+          } else {
+            developer.log('Failed to get FCM token', name: 'FCM');
+          }
         }
       } catch (e) {
-        developer.log('Error getting FCM token (expected on iOS Simulator): $e', name: 'FCM');
+        if (Platform.isIOS && e.toString().contains('Invalid fetch response')) {
+          developer.log(
+            'Cannot get FCM token on iOS Simulator (APNs not available). '
+            'This is expected - use a physical device for push notifications.',
+            name: 'FCM',
+          );
+        } else {
+          developer.log('Error getting FCM token: $e', name: 'FCM');
+        }
         // Silently continue - app should work without FCM
       }
 

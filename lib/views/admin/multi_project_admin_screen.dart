@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../services/admin/multi_project_service.dart';
+import 'create_community_screen.dart';
 
 /// Multi-Project Admin Screen
 /// Allows admins to manage multiple community Firebase projects from one interface
@@ -267,6 +269,18 @@ class MultiProjectAdminScreen extends ConsumerWidget {
         const SizedBox(height: 12),
 
         _buildActionListTile(
+          customIcon: SvgPicture.asset(
+            'assets/icons/firebase_flame.svg',
+            width: 24,
+            height: 24,
+          ),
+          color: const Color(0xFFFF9800),
+          title: 'Create Community',
+          subtitle: 'Create a new Firebase community project',
+          onTap: () => _createCommunity(context, ref, project),
+        ),
+
+        _buildActionListTile(
           icon: Icons.group_add,
           color: Colors.blue,
           title: 'Seed Groups',
@@ -318,7 +332,8 @@ class MultiProjectAdminScreen extends ConsumerWidget {
   }
 
   Widget _buildActionListTile({
-    required IconData icon,
+    IconData? icon,
+    Widget? customIcon,
     required Color color,
     required String title,
     required String subtitle,
@@ -333,7 +348,7 @@ class MultiProjectAdminScreen extends ConsumerWidget {
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: customIcon ?? Icon(icon, color: color, size: 24),
         ),
         title: Text(
           title,
@@ -371,6 +386,14 @@ class MultiProjectAdminScreen extends ConsumerWidget {
   }
 
   // Action handlers
+  void _createCommunity(BuildContext context, WidgetRef ref, CommunityProject project) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CreateCommunityScreen(),
+      ),
+    );
+  }
+
   void _seedGroups(BuildContext context, WidgetRef ref, CommunityProject project) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Seed groups for ${project.name} - Coming soon')),

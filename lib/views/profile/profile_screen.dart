@@ -144,62 +144,17 @@ class ProfileScreen extends ConsumerWidget {
 
                         const SizedBox(height: 24),
 
-                        // Tabs
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: ProfileTab(
-                                  label: 'Help categories',
-                                  isSelected: true,
-                                  onPressed: () {
-                                    // TODO: Show help categories
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ProfileTab(
-                                  label: 'Groups',
-                                  isSelected: true,
-                                  onPressed: () {
-                                    // TODO: Show groups
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
                         // Settings Cards
                         Card(
                           elevation: 1,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           color: AppColors.surface,
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: const Text('Notification Settings'),
-                                trailing: const Icon(Icons.notifications_outlined),
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => const UserPermissionsScreen()),
-                                ),
-                              ),
-                              if (user.isAdmin) ...[
-                                const Divider(height: 1),
-                                ListTile(
-                                  title: const Text('Multi-Project Admin'),
-                                  subtitle: const Text('Manage multiple communities'),
-                                  trailing: const Icon(Icons.admin_panel_settings),
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (context) => const MultiProjectAdminScreen()),
-                                  ),
-                                ),
-                              ],
-                            ],
+                          child: ListTile(
+                            title: const Text('Notification Settings'),
+                            trailing: const Icon(Icons.notifications_outlined),
+                            onTap: () => Navigator.of(
+                              context,
+                            ).push(MaterialPageRoute(builder: (context) => const UserPermissionsScreen())),
                           ),
                         ),
 

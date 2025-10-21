@@ -21,6 +21,9 @@ dependencies:
   firebase_storage: 12.3.4
   firebase_messaging: 15.1.3
 
+  # Firebase Management API
+  firebase_management: ^0.0.4+3
+
   # Code Generation
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
@@ -36,6 +39,7 @@ dependencies:
   firebase_analytics: ^11.3.3
   firebase_crashlytics: ^4.1.3
   flutter_mentions: ^2.0.1
+  flutter_svg: ^2.0.10
 
   # Local Database & Search
   sqflite: ^2.3.3+1
@@ -43,6 +47,7 @@ dependencies:
   path_provider: ^2.1.4
   sqlite3_flutter_libs: ^0.5.24
   connectivity_plus: ^6.0.5
+  cloud_functions: ^5.1.3
 
 dev_dependencies:
   flutter_test:
@@ -57,3 +62,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/
