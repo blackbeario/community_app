@@ -40,6 +40,7 @@ dependencies:
   firebase_crashlytics: ^4.1.3
   flutter_mentions: ^2.0.1
   flutter_svg: ^2.0.10
+  flutter_slidable: ^4.0.3
 
   # Local Database & Search
   sqflite: ^2.3.3+1

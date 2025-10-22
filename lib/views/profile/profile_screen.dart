@@ -7,11 +7,9 @@ import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/profile/profile_viewmodel.dart';
 import 'widgets/default_cover_photo.dart';
 import 'widgets/profile_action_button.dart';
-import 'widgets/profile_tab.dart';
 import 'widgets/editable_unit_number.dart';
 import 'widgets/editable_bio.dart';
 import 'user_permissions_screen.dart';
-import '../admin/multi_project_admin_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -115,34 +113,6 @@ class ProfileScreen extends ConsumerWidget {
                           bio: user.bio,
                           onSave: (bio) => ref.read(profileViewModelProvider.notifier).updateBio(user.id, bio),
                         ),
-
-                        // Action Buttons
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: ProfileActionButton(
-                                  icon: Icons.mail_outline,
-                                  onPressed: () {
-                                    // TODO: Send message
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ProfileActionButton(
-                                  icon: Icons.chat_bubble_outline,
-                                  onPressed: () {
-                                    // TODO: Start chat
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
 
                         // Settings Cards
                         Card(
