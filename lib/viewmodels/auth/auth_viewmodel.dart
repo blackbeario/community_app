@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
+import '../../services/fcm_service.dart';
 import '../../models/user.dart';
 
 part 'auth_viewmodel.g.dart';
@@ -59,8 +60,22 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> signOut() async {
     state = const AsyncValue.loading();
-    
+
     state = await AsyncValue.guard(() async {
+      // Get current user ID before signing out
+      final userId = ref.read(authServiceProvider).currentUser?.uid;
+
+      // Clear FCM token if user exists
+      if (userId != null) {
+        try {
+          await ref.read(fcmServiceProvider).clearToken(userId);
+        } catch (e) {
+          // Log but don't fail logout if FCM cleanup fails
+          print('Failed to clear FCM token during logout: $e');
+        }
+      }
+
+      // Sign out from Firebase Auth
       await ref.read(authServiceProvider).signOut();
     });
   }

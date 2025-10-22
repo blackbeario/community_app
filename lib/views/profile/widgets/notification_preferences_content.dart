@@ -65,6 +65,38 @@ class NotificationPreferencesContent extends ConsumerWidget {
 
         const SizedBox(height: 8),
 
+        // Direct Messages section
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Direct Messages',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Receive notifications when someone sends you a direct message.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  title: const Text('Enable Direct Message Notifications'),
+                  value: preferences.directMessages,
+                  onChanged: (value) {
+                    viewModel.toggleDirectMessages(userId, value);
+                  },
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
         // Info section
         Card(
           color: Colors.blue.shade50,

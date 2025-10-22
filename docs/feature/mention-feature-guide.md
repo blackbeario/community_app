@@ -78,6 +78,8 @@ IconButton(
 )
 
 // Add method to show picker
+// EDIT: UserMentionPicker removed in favor of flutter_mentions pkg
+// for easy inline @mentions 
 Future<void> _showMentionPicker() async {
   final user = await showUserMentionPicker(context);
   if (user != null) {

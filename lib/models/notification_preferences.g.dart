@@ -15,6 +15,7 @@ _$NotificationPreferencesImpl _$$NotificationPreferencesImplFromJson(
       ) ??
       const {},
   announcements: json['announcements'] as bool? ?? true,
+  directMessages: json['directMessages'] as bool? ?? true,
   lastUpdated: _$JsonConverterFromJson<Timestamp, DateTime>(
     json['lastUpdated'],
     const TimestampConverter().fromJson,
@@ -26,6 +27,7 @@ Map<String, dynamic> _$$NotificationPreferencesImplToJson(
 ) => <String, dynamic>{
   'groups': instance.groups,
   'announcements': instance.announcements,
+  'directMessages': instance.directMessages,
   'lastUpdated': _$JsonConverterToJson<Timestamp, DateTime>(
     instance.lastUpdated,
     const TimestampConverter().toJson,

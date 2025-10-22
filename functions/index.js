@@ -365,6 +365,123 @@ function selectEmojiByKeywords(name, description) {
 }
 
 /**
+ * Cloud Function triggered when a new direct message is created
+ * Sends push notification to the recipient if they have DM notifications enabled
+ */
+exports.onDirectMessageCreated = onDocumentCreated(
+    "conversations/{conversationId}/dm_messages/{messageId}",
+    async (event) => {
+      const snapshot = event.data;
+      if (!snapshot) {
+        logger.log("No data associated with the event");
+        return;
+      }
+
+      const message = snapshot.data();
+      const messageId = event.params.messageId;
+      const conversationId = event.params.conversationId;
+
+      logger.log("New DM created:", messageId, "in conversation:", conversationId);
+
+      try {
+        // Get the conversation to find the recipient
+        const conversationDoc = await admin.firestore()
+            .collection("conversations")
+            .doc(conversationId)
+            .get();
+
+        if (!conversationDoc.exists) {
+          logger.error(`Conversation not found: ${conversationId}`);
+          return null;
+        }
+
+        const conversation = conversationDoc.data();
+        const participants = conversation.participants || [];
+
+        // Find the recipient (the participant who is not the sender)
+        const recipientId = participants.find((id) => id !== message.senderId);
+
+        if (!recipientId) {
+          logger.error("Could not find recipient in conversation");
+          return null;
+        }
+
+        // Check if recipient has DM notifications enabled
+        const recipientPrefsDoc = await admin.firestore()
+            .collection("users")
+            .doc(recipientId)
+            .collection("settings")
+            .doc("notificationPreferences")
+            .get();
+
+        if (recipientPrefsDoc.exists) {
+          const prefs = recipientPrefsDoc.data();
+          if (prefs.directMessages === false) {
+            logger.log(`User ${recipientId} has DM notifications disabled`);
+            return null;
+          }
+        }
+
+        // Get sender info
+        const senderDoc = await admin.firestore()
+            .collection("users")
+            .doc(message.senderId)
+            .get();
+
+        if (!senderDoc.exists) {
+          logger.error(`Sender not found: ${message.senderId}`);
+          return null;
+        }
+
+        const sender = senderDoc.data();
+
+        // Get recipient's FCM token
+        const recipientDoc = await admin.firestore()
+            .collection("users")
+            .doc(recipientId)
+            .get();
+
+        if (!recipientDoc.exists) {
+          logger.warn(`Recipient not found: ${recipientId}`);
+          return null;
+        }
+
+        const recipient = recipientDoc.data();
+        const fcmToken = recipient.fcmToken;
+
+        if (!fcmToken) {
+          logger.warn(`No FCM token for user ${recipientId}`);
+          return null;
+        }
+
+        // Send notification
+        const payload = {
+          notification: {
+            title: sender.name,
+            body: truncate(message.content, 100),
+          },
+          data: {
+            type: "direct_message",
+            conversationId: conversationId,
+            messageId: messageId,
+            fromUserId: message.senderId,
+            click_action: "FLUTTER_NOTIFICATION_CLICK",
+          },
+          token: fcmToken,
+        };
+
+        await admin.messaging().send(payload);
+        logger.log(`DM notification sent to user ${recipientId}`);
+
+        return true;
+      } catch (error) {
+        logger.error("Failed to send DM notification:", error);
+        return null;
+      }
+    },
+);
+
+/**
  * Callable function to generate an emoji for a group using Claude API
  * Only callable by admin users
  */

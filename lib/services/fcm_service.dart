@@ -49,14 +49,14 @@ class FCMService {
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       developer.log('User granted notification permission', name: 'FCM');
 
-      // On iOS, set foreground notification presentation options
+      // On iOS, disable foreground notifications (only show badge)
       if (Platform.isIOS) {
         await _messaging.setForegroundNotificationPresentationOptions(
-          alert: true,
+          alert: false,
           badge: true,
-          sound: true,
+          sound: false,
         );
-        developer.log('iOS foreground notification presentation options set', name: 'FCM');
+        developer.log('iOS foreground notification presentation options set (badge only)', name: 'FCM');
       }
 
       // On iOS, ensure APNs token is available before getting FCM token
@@ -183,13 +183,13 @@ class FCMService {
   void setupForegroundHandler() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       developer.log(
-        'Foreground notification: ${message.notification?.title}',
+        'Foreground notification received: ${message.notification?.title}',
         name: 'FCM',
       );
 
-      // With setForegroundNotificationPresentationOptions enabled,
-      // iOS will automatically show the notification banner
-      // No need to manually show local notification
+      // With setForegroundNotificationPresentationOptions disabled for alerts/sounds,
+      // iOS will only update the badge count when app is in foreground
+      // No banner or sound will be shown
     });
   }
 
@@ -223,6 +223,7 @@ class FCMService {
     final type = data['type'];
     final messageId = data['messageId'];
     final fromUserId = data['fromUserId']; // This is the author ID
+    final conversationId = data['conversationId']; // For direct messages
 
     // Get the router context
     final context = rootNavigatorKey.currentContext;
@@ -241,6 +242,15 @@ class FCMService {
         developer.log('Navigate to comment in message: $messageId', name: 'FCM');
         // Navigate to message detail screen (comments are shown on the same screen)
         context.go('/messages/detail/$messageId/$fromUserId');
+        break;
+      case 'direct_message':
+        developer.log('Navigate to conversation: $conversationId', name: 'FCM');
+        // Navigate to direct message conversation screen
+        if (conversationId != null) {
+          context.go('/direct-messages/conversation/$conversationId');
+        } else {
+          developer.log('No conversationId provided for direct_message notification', name: 'FCM');
+        }
         break;
       default:
         developer.log('Unknown notification type: $type', name: 'FCM');

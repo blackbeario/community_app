@@ -15,6 +15,11 @@ class NotificationPreferencesViewModel {
     final service = ref.read(notificationPreferencesServiceProvider);
     await service.subscribeToAnnouncements(userId, subscribe);
   }
+
+  Future<void> toggleDirectMessages(String userId, bool enabled) async {
+    final service = ref.read(notificationPreferencesServiceProvider);
+    await service.toggleDirectMessages(userId, enabled);
+  }
 }
 
 final notificationPreferencesViewModelProvider = Provider((ref) => NotificationPreferencesViewModel(ref));

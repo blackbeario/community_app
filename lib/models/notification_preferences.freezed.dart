@@ -25,6 +25,7 @@ NotificationPreferences _$NotificationPreferencesFromJson(
 mixin _$NotificationPreferences {
   Map<String, bool> get groups => throw _privateConstructorUsedError;
   bool get announcements => throw _privateConstructorUsedError;
+  bool get directMessages => throw _privateConstructorUsedError;
   @TimestampConverter()
   DateTime? get lastUpdated => throw _privateConstructorUsedError;
 
@@ -48,6 +49,7 @@ abstract class $NotificationPreferencesCopyWith<$Res> {
   $Res call({
     Map<String, bool> groups,
     bool announcements,
+    bool directMessages,
     @TimestampConverter() DateTime? lastUpdated,
   });
 }
@@ -72,6 +74,7 @@ class _$NotificationPreferencesCopyWithImpl<
   $Res call({
     Object? groups = null,
     Object? announcements = null,
+    Object? directMessages = null,
     Object? lastUpdated = freezed,
   }) {
     return _then(
@@ -83,6 +86,10 @@ class _$NotificationPreferencesCopyWithImpl<
             announcements: null == announcements
                 ? _value.announcements
                 : announcements // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            directMessages: null == directMessages
+                ? _value.directMessages
+                : directMessages // ignore: cast_nullable_to_non_nullable
                       as bool,
             lastUpdated: freezed == lastUpdated
                 ? _value.lastUpdated
@@ -106,6 +113,7 @@ abstract class _$$NotificationPreferencesImplCopyWith<$Res>
   $Res call({
     Map<String, bool> groups,
     bool announcements,
+    bool directMessages,
     @TimestampConverter() DateTime? lastUpdated,
   });
 }
@@ -130,6 +138,7 @@ class __$$NotificationPreferencesImplCopyWithImpl<$Res>
   $Res call({
     Object? groups = null,
     Object? announcements = null,
+    Object? directMessages = null,
     Object? lastUpdated = freezed,
   }) {
     return _then(
@@ -141,6 +150,10 @@ class __$$NotificationPreferencesImplCopyWithImpl<$Res>
         announcements: null == announcements
             ? _value.announcements
             : announcements // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        directMessages: null == directMessages
+            ? _value.directMessages
+            : directMessages // ignore: cast_nullable_to_non_nullable
                   as bool,
         lastUpdated: freezed == lastUpdated
             ? _value.lastUpdated
@@ -157,6 +170,7 @@ class _$NotificationPreferencesImpl implements _NotificationPreferences {
   const _$NotificationPreferencesImpl({
     final Map<String, bool> groups = const {},
     this.announcements = true,
+    this.directMessages = true,
     @TimestampConverter() this.lastUpdated,
   }) : _groups = groups;
 
@@ -176,12 +190,15 @@ class _$NotificationPreferencesImpl implements _NotificationPreferences {
   @JsonKey()
   final bool announcements;
   @override
+  @JsonKey()
+  final bool directMessages;
+  @override
   @TimestampConverter()
   final DateTime? lastUpdated;
 
   @override
   String toString() {
-    return 'NotificationPreferences(groups: $groups, announcements: $announcements, lastUpdated: $lastUpdated)';
+    return 'NotificationPreferences(groups: $groups, announcements: $announcements, directMessages: $directMessages, lastUpdated: $lastUpdated)';
   }
 
   @override
@@ -192,6 +209,8 @@ class _$NotificationPreferencesImpl implements _NotificationPreferences {
             const DeepCollectionEquality().equals(other._groups, _groups) &&
             (identical(other.announcements, announcements) ||
                 other.announcements == announcements) &&
+            (identical(other.directMessages, directMessages) ||
+                other.directMessages == directMessages) &&
             (identical(other.lastUpdated, lastUpdated) ||
                 other.lastUpdated == lastUpdated));
   }
@@ -202,6 +221,7 @@ class _$NotificationPreferencesImpl implements _NotificationPreferences {
     runtimeType,
     const DeepCollectionEquality().hash(_groups),
     announcements,
+    directMessages,
     lastUpdated,
   );
 
@@ -226,6 +246,7 @@ abstract class _NotificationPreferences implements NotificationPreferences {
   const factory _NotificationPreferences({
     final Map<String, bool> groups,
     final bool announcements,
+    final bool directMessages,
     @TimestampConverter() final DateTime? lastUpdated,
   }) = _$NotificationPreferencesImpl;
 
@@ -236,6 +257,8 @@ abstract class _NotificationPreferences implements NotificationPreferences {
   Map<String, bool> get groups;
   @override
   bool get announcements;
+  @override
+  bool get directMessages;
   @override
   @TimestampConverter()
   DateTime? get lastUpdated;

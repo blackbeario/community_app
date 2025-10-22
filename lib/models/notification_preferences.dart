@@ -9,6 +9,7 @@ class NotificationPreferences with _$NotificationPreferences {
   const factory NotificationPreferences({
     @Default({}) Map<String, bool> groups,
     @Default(true) bool announcements,
+    @Default(true) bool directMessages,
     @TimestampConverter() DateTime? lastUpdated,
   }) = _NotificationPreferences;
 

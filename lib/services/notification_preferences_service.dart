@@ -108,6 +108,25 @@ class NotificationPreferencesService {
     }
   }
 
+  // Enable/disable direct message notifications
+  Future<void> toggleDirectMessages(String userId, bool enabled) async {
+    try {
+      // Update preferences in Firestore
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('settings')
+          .doc('notificationPreferences')
+          .set({
+        'directMessages': enabled,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error toggling direct message notifications: $e');
+      rethrow;
+    }
+  }
+
   // Initialize default preferences for a new user or when they join a group
   Future<void> initializeGroupPreference(String userId, String groupId, {bool defaultSubscribe = true}) async {
     try {

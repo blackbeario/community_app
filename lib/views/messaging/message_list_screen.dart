@@ -59,7 +59,7 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
                         child: UserAvatar(imageUrl: user.photoUrl, name: user.name, radius: 20),
                       ),
                       const Expanded(
-                        child: Center(child: Text('Community', style: AppTextStyles.appBarTitle)),
+                        child: Center(child: Text('Message Groups', style: AppTextStyles.appBarTitle)),
                       ),
                       const SizedBox(width: 40), // Balance the avatar width
                     ],
@@ -77,20 +77,22 @@ class _MessageListScreenState extends ConsumerState<MessageListScreen> {
                 Expanded(
                   child: _isSearching
                       ? const MessageSearchResults()
-                      : ref.watch(selectableGroupsProvider).when(
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (error, stack) => Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                                  const SizedBox(height: 16),
-                                  Text('Error loading groups: $error'),
-                                ],
+                      : ref
+                            .watch(selectableGroupsProvider)
+                            .when(
+                              loading: () => const Center(child: CircularProgressIndicator()),
+                              error: (error, stack) => Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                                    const SizedBox(height: 16),
+                                    Text('Error loading groups: $error'),
+                                  ],
+                                ),
                               ),
+                              data: (groups) => GroupsListView(groups: groups),
                             ),
-                            data: (groups) => GroupsListView(groups: groups),
-                          ),
                 ),
               ],
             ),

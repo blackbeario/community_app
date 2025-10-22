@@ -15,6 +15,7 @@ import '../../views/profile/profile_screen.dart';
 import '../../views/admin/admin_screen.dart';
 import '../../models/group.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
+import '../../viewmodels/direct_messages/dm_viewmodel.dart';
 
 part 'app_router.g.dart';
 
@@ -147,6 +148,21 @@ class MainScaffold extends ConsumerWidget {
       orElse: () => false,
     );
 
+    final userId = currentUserAsync.maybeWhen(
+      data: (user) => user?.id,
+      orElse: () => null,
+    );
+
+    // Watch unread DM count
+    final unreadDmCountAsync = userId != null
+        ? ref.watch(unreadDmCountProvider(userId))
+        : const AsyncValue<int>.data(0);
+
+    final unreadDmCount = unreadDmCountAsync.maybeWhen(
+      data: (count) => count,
+      orElse: () => 0,
+    );
+
     return Scaffold(
       body: child,
       bottomNavigationBar: BottomNavigationBar(
@@ -158,8 +174,13 @@ class MainScaffold extends ConsumerWidget {
             icon: Icon(Icons.message),
             label: 'Messages',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
+          BottomNavigationBarItem(
+            icon: unreadDmCount > 0
+                ? Badge(
+                    label: Text(unreadDmCount > 99 ? '99+' : '$unreadDmCount'),
+                    child: const Icon(Icons.chat),
+                  )
+                : const Icon(Icons.chat),
             label: 'DMs',
           ),
           const BottomNavigationBarItem(

@@ -8,6 +8,7 @@ import '../../models/direct_message.dart';
 import '../../models/user.dart';
 import '../../services/dm_service.dart';
 import '../../services/user_service.dart';
+import '../navigation/screen_tracking_viewmodel.dart';
 
 part 'dm_viewmodel.g.dart';
 
@@ -48,11 +49,36 @@ Future<User?> conversationOtherUser(Ref ref, String conversationId, String curre
   return userService.getUser(otherUserId);
 }
 
-/// Provider for total unread count
+/// Provider for total unread count (one-time fetch)
 @riverpod
 Future<int> totalUnreadCount(Ref ref, String userId) async {
   final service = ref.watch(dmServiceProvider);
   return service.getUnreadCount(userId);
+}
+
+/// Stream provider for real-time unread DM count
+/// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+@riverpod
+Stream<int> unreadDmCount(Ref ref, String userId) {
+  final service = ref.watch(dmServiceProvider);
+  final currentScreen = ref.watch(currentScreenProvider);
+
+  return service.watchUnreadCount(userId).asyncMap((totalCount) async {
+    // If user is viewing a conversation, subtract that conversation's unread count
+    if (currentScreen != null && currentScreen.startsWith('/direct-messages/conversation/')) {
+      final conversationId = currentScreen.split('/').last;
+
+      // Get the conversation to check its unread count
+      final conversationSnapshot = await service.getConversation(conversationId).first;
+      if (conversationSnapshot != null) {
+        final unreadForThisConvo = conversationSnapshot.unreadCount[userId] ?? 0;
+        // Subtract this conversation's unread from total to prevent badge flash
+        return (totalCount - unreadForThisConvo).clamp(0, double.infinity).toInt();
+      }
+    }
+
+    return totalCount;
+  });
 }
 
 /// ViewModel for direct message actions
