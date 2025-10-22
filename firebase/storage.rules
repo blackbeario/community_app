@@ -46,13 +46,22 @@ service firebase.storage {
     }
 
     // DM attachments
-    match /conversations/{conversationId}/{fileName} {
-      // Only conversation participants can access
-      allow read: if isAuthenticated(); // We'll verify in app logic
+    match /dm_attachments/{conversationId}/{fileName} {
+      // Helper to check if user is conversation participant based on ID pattern
+      function isConversationParticipant() {
+        return conversationId.split('_')[0] == request.auth.uid ||
+               conversationId.split('_')[1] == request.auth.uid;
+      }
 
-      // Authenticated users can upload
+      // Only conversation participants can read attachments
+      allow read: if isAuthenticated() && isConversationParticipant();
+
+      // Only conversation participants can upload attachments
       allow write: if isAuthenticated() &&
-                      request.resource.size < 10 * 1024 * 1024; // 10MB limit
+                      isConversationParticipant() &&
+                      request.resource.size < 10 * 1024 * 1024 && // 10MB limit
+                      (request.resource.contentType.matches('image/.*') ||
+                       request.resource.contentType.matches('application/pdf'));
     }
 
     // Incident photos (for map)

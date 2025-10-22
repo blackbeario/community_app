@@ -8,6 +8,9 @@ import '../../views/auth/register_screen.dart';
 import '../../views/messaging/message_list_screen.dart';
 import '../../views/messaging/message_detail_screen_wrapper.dart';
 import '../../views/messaging/group_messages_screen.dart';
+import '../../views/direct_messages/conversations_list_screen.dart';
+import '../../views/direct_messages/conversation_screen.dart';
+import '../../views/direct_messages/new_conversation_screen.dart';
 import '../../views/profile/profile_screen.dart';
 import '../../views/admin/admin_screen.dart';
 import '../../models/group.dart';
@@ -81,6 +84,28 @@ GoRouter goRouter(Ref ref) {
               ],
             ),
             GoRoute(
+              path: '/direct-messages',
+              name: 'directMessages',
+              builder: (context, state) => const ConversationsListScreen(),
+              routes: [
+                GoRoute(
+                  path: 'new',
+                  name: 'newConversation',
+                  builder: (context, state) => const NewConversationScreen(),
+                ),
+                GoRoute(
+                  path: 'conversation/:conversationId',
+                  name: 'conversation',
+                  builder: (context, state) {
+                    final conversationId = state.pathParameters['conversationId']!;
+                    return ConversationScreen(
+                      conversationId: conversationId,
+                    );
+                  },
+                ),
+              ],
+            ),
+            GoRoute(
               path: '/profile',
               name: 'profile',
               builder: (context, state) => const ProfileScreen(),
@@ -127,10 +152,15 @@ class MainScaffold extends ConsumerWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _getCurrentIndex(context, isAdmin),
         onTap: (index) => _onItemTapped(context, index),
+        type: BottomNavigationBarType.fixed,
         items: [
           const BottomNavigationBarItem(
             icon: Icon(Icons.message),
             label: 'Messages',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'DMs',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -148,13 +178,19 @@ class MainScaffold extends ConsumerWidget {
 
   int _getCurrentIndex(BuildContext context, bool isAdmin) {
     final location = GoRouterState.of(context).matchedLocation;
+
+    // Check if on direct messages screen
+    if (location.startsWith('/direct-messages')) {
+      return 1;
+    }
+
     switch (location) {
       case '/messages':
         return 0;
       case '/profile':
-        return 1;
+        return 2;
       case '/admin':
-        return isAdmin ? 2 : 0;
+        return isAdmin ? 3 : 0;
       default:
         return 0;
     }
@@ -166,9 +202,12 @@ class MainScaffold extends ConsumerWidget {
         context.go('/messages');
         break;
       case 1:
-        context.go('/profile');
+        context.go('/direct-messages');
         break;
       case 2:
+        context.go('/profile');
+        break;
+      case 3:
         context.go('/admin');
         break;
     }

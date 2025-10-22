@@ -88,13 +88,31 @@ service cloud.firestore {
 
     // Conversations collection (DMs)
     match /conversations/{conversationId} {
-      // Only participants can read conversations
-      allow read: if isAuthenticated() &&
-                     request.auth.uid in resource.data.participants;
+      // Helper function to check if user is a participant based on conversationId pattern
+      // Conversation IDs are formatted as "userId1_userId2" (sorted alphabetically)
+      function isConversationParticipant() {
+        return conversationId.split('_')[0] == request.auth.uid ||
+               conversationId.split('_')[1] == request.auth.uid;
+      }
 
-      // Only participants can create/update conversations
-      allow create, update: if isAuthenticated() &&
-                               request.auth.uid in request.resource.data.participants;
+      // Participants can read conversations (existing or non-existent for get-or-create)
+      allow read: if isAuthenticated() &&
+                     (isConversationParticipant() ||
+                      (resource != null && request.auth.uid in resource.data.participants));
+
+      // Users can create conversations where they are a participant
+      // Must have exactly 2 participants and creator must be one of them
+      allow create: if isAuthenticated() &&
+                       request.resource.data.participants.size() == 2 &&
+                       request.auth.uid in request.resource.data.participants;
+
+      // Only participants can update conversations
+      allow update: if isAuthenticated() &&
+                       request.auth.uid in resource.data.participants;
+
+      // Only participants can delete conversations
+      allow delete: if isAuthenticated() &&
+                       request.auth.uid in resource.data.participants;
 
       // DM messages subcollection
       match /dm_messages/{messageId} {
@@ -107,6 +125,9 @@ service cloud.firestore {
                          request.resource.data.senderId == request.auth.uid;
 
         allow update: if isAuthenticated() &&
+                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+
+        allow delete: if isAuthenticated() &&
                          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
       }
     }
