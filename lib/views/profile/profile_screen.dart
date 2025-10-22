@@ -74,14 +74,6 @@ class ProfileScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.logout),
-                        onPressed: () {
-                          ref.read(authViewModelProvider.notifier).signOut();
-                        },
-                      ),
-                    ],
                   ),
 
                   // Profile Content with padding for profile photo
@@ -125,6 +117,20 @@ class ProfileScreen extends ConsumerWidget {
                             onTap: () => Navigator.of(
                               context,
                             ).push(MaterialPageRoute(builder: (context) => const UserPermissionsScreen())),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Logout Card
+                        Card(
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          color: AppColors.surface,
+                          child: ListTile(
+                            title: const Text('Logout', style: TextStyle(color: Colors.red)),
+                            trailing: const Icon(Icons.logout, color: Colors.red),
+                            onTap: () => _showLogoutConfirmation(context, ref),
                           ),
                         ),
 
@@ -247,6 +253,29 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref.read(authViewModelProvider.notifier).signOut();
+            },
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

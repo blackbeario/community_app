@@ -176,8 +176,9 @@ class LocalUserCacheService {
     return DateTime.fromMillisecondsSinceEpoch(result.first['lastSynced'] as int);
   }
 
-  /// Check if cache needs refresh (e.g., older than 24 hours)
-  Future<bool> needsRefresh({Duration maxAge = const Duration(hours: 24)}) async {
+  /// Check if cache needs refresh (e.g., older than 1 hour for development)
+  /// TODO: Change back to 24 hours for production
+  Future<bool> needsRefresh({Duration maxAge = const Duration(hours: 1)}) async {
     final lastSync = await getLastSyncTime();
     if (lastSync == null) return true;
 

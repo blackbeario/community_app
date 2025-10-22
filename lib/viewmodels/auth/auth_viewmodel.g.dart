@@ -60,7 +60,7 @@ final currentAppUserProvider = AutoDisposeStreamProvider<User?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CurrentAppUserRef = AutoDisposeStreamProviderRef<User?>;
-String _$authViewModelHash() => r'd39e11c7382aea59c7790b856c703fbcd6f0b51e';
+String _$authViewModelHash() => r'8059e8b4b801129b13a6368f75181a61986f7851';
 
 /// See also [AuthViewModel].
 @ProviderFor(AuthViewModel)

@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../services/auth_service.dart';
 import '../../services/image_picker_service.dart';
+import '../../services/user_cache_sync_service.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/messaging/message_viewmodel.dart';
 import 'widgets/image_source_dialog.dart';
@@ -161,6 +162,22 @@ class _CreateMessageScreenState extends ConsumerState<CreateMessageScreen> {
           style: AppTextStyles.appBarTitle,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _isSubmitting ? null : () async {
+              await ref.read(userCacheSyncProvider.notifier).forceRefresh();
+              ref.invalidate(allCachedUsersProvider);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('User list refreshed'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            tooltip: 'Refresh user list',
+          ),
           if (_isSubmitting)
             const Center(
               child: Padding(

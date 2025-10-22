@@ -591,22 +591,22 @@ class _ConversationOtherUserProviderElement
 
 String _$totalUnreadCountHash() => r'c1feaaf3bbd94e48295736869b4ab13b422a3d6a';
 
-/// Provider for total unread count
+/// Provider for total unread count (one-time fetch)
 ///
 /// Copied from [totalUnreadCount].
 @ProviderFor(totalUnreadCount)
 const totalUnreadCountProvider = TotalUnreadCountFamily();
 
-/// Provider for total unread count
+/// Provider for total unread count (one-time fetch)
 ///
 /// Copied from [totalUnreadCount].
 class TotalUnreadCountFamily extends Family<AsyncValue<int>> {
-  /// Provider for total unread count
+  /// Provider for total unread count (one-time fetch)
   ///
   /// Copied from [totalUnreadCount].
   const TotalUnreadCountFamily();
 
-  /// Provider for total unread count
+  /// Provider for total unread count (one-time fetch)
   ///
   /// Copied from [totalUnreadCount].
   TotalUnreadCountProvider call(String userId) {
@@ -635,11 +635,11 @@ class TotalUnreadCountFamily extends Family<AsyncValue<int>> {
   String? get name => r'totalUnreadCountProvider';
 }
 
-/// Provider for total unread count
+/// Provider for total unread count (one-time fetch)
 ///
 /// Copied from [totalUnreadCount].
 class TotalUnreadCountProvider extends AutoDisposeFutureProvider<int> {
-  /// Provider for total unread count
+  /// Provider for total unread count (one-time fetch)
   ///
   /// Copied from [totalUnreadCount].
   TotalUnreadCountProvider(String userId)
@@ -719,6 +719,144 @@ class _TotalUnreadCountProviderElement
 
   @override
   String get userId => (origin as TotalUnreadCountProvider).userId;
+}
+
+String _$unreadDmCountHash() => r'2f6a45766e3f5e72f71d9eb5d44b90ebf8d81522';
+
+/// Stream provider for real-time unread DM count
+/// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+///
+/// Copied from [unreadDmCount].
+@ProviderFor(unreadDmCount)
+const unreadDmCountProvider = UnreadDmCountFamily();
+
+/// Stream provider for real-time unread DM count
+/// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+///
+/// Copied from [unreadDmCount].
+class UnreadDmCountFamily extends Family<AsyncValue<int>> {
+  /// Stream provider for real-time unread DM count
+  /// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+  ///
+  /// Copied from [unreadDmCount].
+  const UnreadDmCountFamily();
+
+  /// Stream provider for real-time unread DM count
+  /// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+  ///
+  /// Copied from [unreadDmCount].
+  UnreadDmCountProvider call(String userId) {
+    return UnreadDmCountProvider(userId);
+  }
+
+  @override
+  UnreadDmCountProvider getProviderOverride(
+    covariant UnreadDmCountProvider provider,
+  ) {
+    return call(provider.userId);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'unreadDmCountProvider';
+}
+
+/// Stream provider for real-time unread DM count
+/// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+///
+/// Copied from [unreadDmCount].
+class UnreadDmCountProvider extends AutoDisposeStreamProvider<int> {
+  /// Stream provider for real-time unread DM count
+  /// Automatically adjusts count when user is viewing a conversation to prevent badge flash
+  ///
+  /// Copied from [unreadDmCount].
+  UnreadDmCountProvider(String userId)
+    : this._internal(
+        (ref) => unreadDmCount(ref as UnreadDmCountRef, userId),
+        from: unreadDmCountProvider,
+        name: r'unreadDmCountProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$unreadDmCountHash,
+        dependencies: UnreadDmCountFamily._dependencies,
+        allTransitiveDependencies:
+            UnreadDmCountFamily._allTransitiveDependencies,
+        userId: userId,
+      );
+
+  UnreadDmCountProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.userId,
+  }) : super.internal();
+
+  final String userId;
+
+  @override
+  Override overrideWith(
+    Stream<int> Function(UnreadDmCountRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: UnreadDmCountProvider._internal(
+        (ref) => create(ref as UnreadDmCountRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        userId: userId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeStreamProviderElement<int> createElement() {
+    return _UnreadDmCountProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnreadDmCountProvider && other.userId == userId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, userId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin UnreadDmCountRef on AutoDisposeStreamProviderRef<int> {
+  /// The parameter `userId` of this provider.
+  String get userId;
+}
+
+class _UnreadDmCountProviderElement
+    extends AutoDisposeStreamProviderElement<int>
+    with UnreadDmCountRef {
+  _UnreadDmCountProviderElement(super.provider);
+
+  @override
+  String get userId => (origin as UnreadDmCountProvider).userId;
 }
 
 String _$dmViewModelHash() => r'c6d1d3778714685fa3aa6bb838c1d7f4f173ac82';

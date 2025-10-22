@@ -236,6 +236,22 @@ class DmService {
     return totalUnread;
   }
 
+  /// Stream unread message count for a user across all conversations
+  Stream<int> watchUnreadCount(String userId) {
+    return _firestore
+        .collection(_conversationsCollection)
+        .where('participants', arrayContains: userId)
+        .snapshots()
+        .map((snapshot) {
+      int totalUnread = 0;
+      for (final doc in snapshot.docs) {
+        final conversation = Conversation.fromJson(doc.data());
+        totalUnread += conversation.unreadCount[userId] ?? 0;
+      }
+      return totalUnread;
+    });
+  }
+
   /// Search messages in a conversation
   Future<List<DirectMessage>> searchMessages(
       String conversationId, String searchTerm) async {

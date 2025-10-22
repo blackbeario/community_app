@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/direct_message.dart';
 import '../../viewmodels/auth/auth_viewmodel.dart';
 import '../../viewmodels/direct_messages/dm_viewmodel.dart';
+import '../../viewmodels/navigation/screen_tracking_viewmodel.dart';
 import '../../widgets/user_avatar.dart';
 import 'widgets/dm_message_bubble.dart';
 
@@ -32,7 +34,20 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   File? _selectedImage;
 
   @override
+  void initState() {
+    super.initState();
+    // Set current screen for unread count management
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(currentScreenProvider.notifier).setScreen(
+        '/direct-messages/conversation/${widget.conversationId}',
+      );
+    });
+  }
+
+  @override
   void dispose() {
+    // Clear current screen when leaving
+    ref.read(currentScreenProvider.notifier).setScreen(null);
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -155,13 +170,17 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                           );
                         }
 
-                        // Mark messages as read
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _markMessagesAsRead(
-                            messages,
-                            currentUser.id,
-                            otherUserId,
-                          );
+                        // Mark messages as read using scheduleMicrotask for faster execution
+                        // This minimizes the badge flash when receiving messages
+                        // while actively viewing the conversation
+                        scheduleMicrotask(() {
+                          if (mounted) {
+                            _markMessagesAsRead(
+                              messages,
+                              currentUser.id,
+                              otherUserId,
+                            );
+                          }
                         });
 
                         return ListView.builder(
