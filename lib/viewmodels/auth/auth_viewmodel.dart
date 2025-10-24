@@ -1,3 +1,4 @@
+import 'package:community/core/routing/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -59,7 +60,7 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   Future<void> signOut() async {
-    state = const AsyncValue.loading();
+    // state = const AsyncValue.loading();
 
     state = await AsyncValue.guard(() async {
       // Get current user ID before signing out
@@ -77,6 +78,9 @@ class AuthViewModel extends _$AuthViewModel {
 
       // Sign out from Firebase Auth
       await ref.read(authServiceProvider).signOut();
+      
+      // Force router to rebuild and redirect, clearing ShellRoute stack
+      ref.invalidate(goRouterProvider);
     });
   }
 
